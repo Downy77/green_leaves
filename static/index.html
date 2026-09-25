@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>耦合生命 · 复刻版</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20260924-composer3">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="orb"><span></span></div>
+        <div>
+          <strong>耦合生命</strong>
+          <small>Deployable Clone</small>
+        </div>
+      </div>
+      <button class="primary-action" id="newChat">新对话</button>
+      <label class="search">
+        <span>搜索</span>
+        <input id="historySearch" placeholder="搜索历史对话">
+      </label>
+      <nav class="tabs">
+        <button class="tab active" data-tab="history">对话</button>
+        <button class="tab" data-tab="trash">回收站</button>
+        <button class="tab" data-tab="knowledge">耦合知识库</button>
+        <button class="tab" data-tab="settings">系统设置</button>
+      </nav>
+      <section class="side-panel active" id="panel-history">
+        <div class="panel-title">历史会话</div>
+        <div class="list" id="historyList"></div>
+      </section>
+      <section class="side-panel" id="panel-trash">
+        <div class="panel-title">回收站</div>
+        <div class="list" id="trashList"></div>
+      </section>
+      <section class="side-panel" id="panel-knowledge">
+        <div class="panel-title">耦合知识库</div>
+        <section class="kb-workspace-clone" id="kbWorkspace">
+          <div class="kb-toolbar-clone">
+            <input id="kbSearch" type="search" placeholder="搜索知识" aria-label="搜索知识">
+            <button type="button" class="kb-btn-clone" id="kbImportOpen">导入知识</button>
+            <div class="kb-zoom-tools-clone" aria-label="图谱视图控制">
+              <button type="button" class="kb-btn-clone kb-icon-clone" id="kbZoomOut" title="缩小">−</button>
+              <button type="button" class="kb-btn-clone kb-icon-clone" id="kbZoomFit" title="适应画布">◎</button>
+              <button type="button" class="kb-btn-clone kb-icon-clone" id="kbZoomIn" title="放大">+</button>
+              <button type="button" class="kb-btn-clone kb-icon-clone" id="kbLayoutReset" title="重置布局">↻</button>
+            </div>
+            <button type="button" class="kb-btn-clone" id="exportWiki">导出</button>
+          </div>
+
+          <svg class="kb-canvas-clone" id="kbGraph" viewBox="0 0 1200 760" aria-label="可交互知识网络图">
+            <rect class="kb-bg-clone" width="1200" height="760"></rect>
+            <g id="kbEdgeLayer"></g>
+            <g id="kbNodeLayer"></g>
+          </svg>
+          <div class="kb-empty-clone" id="kbEmpty"><strong>知识库还是空的</strong><span>导入资料，或在聊天里让智能体记住重要信息。</span></div>
+          <div class="kb-status-clone" id="kbStatus">节点 0 · 关系 0</div>
+
+          <aside class="kb-drawer-clone" id="kbImportDrawer" aria-label="导入知识">
+            <div class="kb-drawer-head-clone">
+              <div><h3>导入知识</h3><p>原始文件会保留，解析成功后知识立即可用。</p></div>
+              <button type="button" class="kb-close-clone" id="kbImportClose">×</button>
+            </div>
+            <label class="kb-dropzone-clone" id="kbDropzone"><strong>拖入文件，或点击选择</strong><span>支持文本、代码、表格、Office、PDF 和图片</span><input id="kbFiles" type="file" multiple hidden></label>
+            <div class="kb-paste-clone">
+              <label for="kbTitle">知识标题</label>
+              <input id="kbTitle" type="text" maxlength="100" placeholder="例如：客户跟进规则">
+              <label for="kbText">知识内容</label>
+              <textarea id="kbText" placeholder="也可以直接粘贴一段知识或聊天内容"></textarea>
+              <div class="kb-actions-clone"><button type="button" class="kb-btn-clone" id="addKnowledge">添加知识</button></div>
+            </div>
+            <div class="kb-source-list-clone" id="knowledgeList"></div>
+          </aside>
+
+          <aside class="kb-drawer-clone" id="kbInspector" aria-label="知识节点详情">
+            <div class="kb-drawer-head-clone">
+              <div><p id="kbNodeKind">知识条目</p><h3 id="kbNodeTitle">知识节点</h3></div>
+              <button type="button" class="kb-close-clone" id="kbInspectorClose">×</button>
+            </div>
+            <section id="kbReader">
+              <div class="kb-reader-actions-clone"><button type="button" class="kb-btn-clone" id="kbEditNote">编辑</button></div>
+              <span class="kb-reader-state-clone" id="kbReaderState">已确认知识</span>
+              <article class="kb-note-body-clone" id="kbReaderContent"></article>
+              <section class="kb-reader-section-clone"><h4>来源</h4><p id="kbReaderSources">手工知识</p></section>
+              <section class="kb-reader-section-clone"><h4>关联知识</h4><div id="kbReaderRelations">暂无关联知识。</div></section>
+            </section>
+            <section id="kbEditor" hidden>
+              <div class="kb-reader-actions-clone"><button type="button" class="kb-btn-clone" id="kbCancelEdit">返回阅读</button></div>
+              <div class="kb-field-clone"><label for="kbEditTitle">标题</label><input id="kbEditTitle" type="text"></div>
+              <div class="kb-field-clone"><label for="kbEditContent">内容</label><textarea id="kbEditContent"></textarea></div>
+              <div class="kb-field-clone"><label for="kbRelationTarget">添加关联</label><select id="kbRelationTarget"><option value="">选择已有节点</option></select></div>
+              <div class="kb-chips-clone" id="kbRelationList"></div>
+              <div class="kb-meta-clone" id="kbNodeMeta"></div>
+              <div class="kb-actions-clone"><button type="button" class="kb-btn-clone" id="kbSaveNote">保存</button><button type="button" class="kb-btn-clone" id="kbArchiveNote">归档</button></div>
+            </section>
+          </aside>
+        </section>
+      </section>
+      <section class="side-panel" id="panel-settings">
+        <div class="settings-section-title">个人资料</div>
+        <div class="settings-panel-clone">
+          <div class="setting-group-clone">
+            <div class="profile-fields-clone">
+              <input id="profileName" maxlength="50" autocomplete="name" placeholder="姓名">
+              <select id="profileIdentity">
+                <option value="user">普通用户</option>
+                <option value="staff">员工</option>
+                <option value="interviewer">面试者</option>
+              </select>
+              <input id="profileCompany" placeholder="公司">
+              <input id="profileDepartment" placeholder="归属部门">
+              <button type="button" class="profile-save-clone" id="saveProfile">保存资料</button>
+            </div>
+            <div class="setting-state-clone" id="profileState" role="status">个人资料已就绪</div>
+          </div>
+        </div>
+
+        <div class="settings-section-title">界面设置</div>
+        <div class="settings-panel-clone">
+          <div class="setting-group-clone">
+            <div class="setting-label-row-clone"><span class="setting-label-clone">主题</span></div>
+            <div class="setting-segment-clone" id="themeSetting">
+              <button type="button" data-theme-value="aurora">跟随系统</button>
+              <button type="button" data-theme-value="paper">浅色</button>
+              <button type="button" data-theme-value="ink">夜间</button>
+            </div>
+          </div>
+          <div class="setting-group-clone">
+            <div class="setting-label-row-clone"><span class="setting-label-clone">字体大小</span><span class="setting-value-clone" id="fontScaleValue">100%</span></div>
+            <input class="setting-range-clone" id="fontScale" type="range" min="90" max="120" step="5" value="100">
+            <div class="setting-help-clone">调整对话、侧栏和输入区域的文字大小。</div>
+          </div>
+          <div class="setting-group-clone">
+            <div class="setting-label-row-clone"><span class="setting-label-clone">内容宽度</span></div>
+            <div class="setting-segment-clone" id="widthSetting">
+              <button type="button" data-width-value="compact">紧凑</button>
+              <button type="button" data-width-value="standard">标准</button>
+              <button type="button" data-width-value="wide">宽屏</button>
+            </div>
+          </div>
+          <div class="setting-group-clone">
+            <label class="setting-switch-clone"><span class="setting-label-clone">减少动效</span><input id="motionSetting" type="checkbox"></label>
+          </div>
+          <div class="setting-group-clone">
+            <label class="setting-switch-clone">
+              <span class="setting-switch-copy-clone"><span class="setting-label-clone">长期记忆</span><span class="setting-help-clone">记住你的身份、偏好和重要约定，用于后续相关对话。</span></span>
+              <input id="memorySetting" type="checkbox" aria-describedby="memorySettingState">
+            </label>
+            <div class="setting-state-clone" id="memorySettingState" role="status">正在读取记忆设置…</div>
+          </div>
+          <div class="setting-group-clone memory-manager-clone" id="memoryManager">
+            <div class="setting-label-row-clone"><span class="setting-label-clone">记忆管理</span><button type="button" class="settings-reset-clone" id="refreshMemory">刷新</button></div>
+            <div class="setting-help-clone">这里只显示你明确要求记住的内容和规则；自动提取的记忆不会显示。每条内容保留来源会话和版本记录。</div>
+            <div class="memory-create-clone"><input id="memoryText" placeholder="让系统记住一条规则或事实"><button id="addMemory">添加</button></div>
+            <div class="memory-manager-filters-clone">
+              <input id="memoryManagerQuery" type="search" maxlength="500" placeholder="搜索已记住的内容">
+              <select id="memoryManagerStatus"><option value="">全部状态</option><option value="confirmed">已确认</option><option value="archived">已归档</option></select>
+              <select id="memoryManagerKind"><option value="">全部类型</option><option value="fact">记住内容</option><option value="procedure">用户规则</option></select>
+            </div>
+            <div id="memoryManagerState" class="setting-state-clone" role="status">正在读取记忆…</div>
+            <div id="memoryList" class="memory-manager-list-clone"></div>
+          </div>
+          <div class="setting-group-clone">
+            <label class="setting-switch-clone">
+              <span class="setting-switch-copy-clone"><span class="setting-label-clone">知识库检索</span><span class="setting-help-clone">让智能体回答时引用耦合知识库；关闭不影响资料保存、图谱和手动搜索。</span></span>
+              <input id="knowledgeSetting" type="checkbox" aria-describedby="knowledgeSettingState">
+            </label>
+            <div class="setting-state-clone" id="knowledgeSettingState" role="status">正在读取知识库设置…</div>
+          </div>
+          <div class="setting-group-clone">
+            <label class="setting-switch-clone">
+              <span class="setting-switch-copy-clone"><span class="setting-label-clone">智能上下文优化</span><span class="setting-help-clone">仅在长对话中安全整理旧内容，最近对话和完整记录保持不变。</span></span>
+              <input id="contextSetting" type="checkbox" aria-describedby="contextSettingState">
+            </label>
+            <div class="setting-state-clone" id="contextSettingState" role="status">正在读取上下文设置…</div>
+          </div>
+          <button type="button" class="settings-reset-clone settings-reset-wide" id="resetUi">恢复默认设置</button>
+        </div>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-btn" id="toggleSidebar">☰</button>
+        <div class="conversation-heading">
+          <span class="status-dot"></span>
+          <div>
+            <strong id="conversationTitle">新对话</strong>
+            <small id="statusText">在线 · 本地可部署</small>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="announcementBtn" title="公告中心" aria-label="公告中心">公告</button>
+          <button class="icon-btn" id="loginHelpTop" title="联系管理员" aria-label="联系管理员">帮助</button>
+          <button class="icon-btn" id="settingsTop" title="界面设置" aria-label="界面设置">设置</button>
+          <div class="user-menu-lite">
+            <button class="icon-btn" id="userMenuTop" aria-haspopup="menu" aria-expanded="false">访客 ▾</button>
+            <div class="user-menu-pop" id="userMenuPop" role="menu">
+              <strong>体验用户</strong>
+              <button id="memoBtn" role="menuitem">备忘录</button>
+              <button id="apiKeyBtn" role="menuitem">API 密钥</button>
+              <button id="profileMenuBtn" role="menuitem">个人资料</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="messages" id="messages">
+        <div class="welcome">
+          <canvas id="lifeCanvas" width="260" height="260"></canvas>
+          <h1>今天想推进什么？</h1>
+          <p>从一个问题、文件、知识库资料或任务开始。这个复刻版可以直接部署，也可以接入真实大模型。</p>
+          <div class="starter-grid">
+            <button data-prompt="你和一般的大模型有何不同？">核心差异</button>
+            <button data-prompt="帮我把这个网站拆成可执行开发计划">开发计划</button>
+            <button data-prompt="生成一份产品汇报 PPT 大纲">PPT 大纲</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="composer" id="inputArea">
+        <div id="fileList" class="file-list-clone"></div>
+        <div class="input-tools input-tools-top" id="inputToolsTop">
+          <div class="input-tools-group input-tools-primary">
+            <div class="web-search-mode-wrap" id="webSearchModeWrap">
+              <button type="button" class="web-search-btn" id="webSearchBtn" aria-haspopup="menu" aria-expanded="false" title="选择联网搜索模式">
+                <span class="dot"></span><span class="search-mode-label" id="webSearchModeLabel">联网 · 自动</span>
+              </button>
+              <div class="web-search-mode-menu" id="webSearchModeMenu" role="menu" aria-label="联网搜索模式">
+                <button type="button" role="menuitemradio" data-search-mode="off" aria-checked="false"><span>关闭</span><small>不联网</small></button>
+                <button type="button" role="menuitemradio" data-search-mode="manual" aria-checked="false"><span>手动</span><small>每次联网</small></button>
+                <button type="button" role="menuitemradio" data-search-mode="auto" aria-checked="true"><span>自动</span><small>按需判断</small></button>
+              </div>
+            </div>
+            <button class="tts-btn" id="ttsToggle" title="开启后自动朗读 AI 回答">
+              <svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 9v6h4l5 4V5L9 9H5Z"></path>
+                <path d="M17 10a3 3 0 0 1 0 4"></path>
+                <path d="M19 7a7 7 0 0 1 0 10"></path>
+              </svg><span class="tool-label">语音播报</span>
+            </button>
+            <span class="file-name" id="fileBadge"></span>
+            <button type="button" class="branch-cancel-btn" id="branchCancelBtn">取消分支</button>
+          </div>
+          <div class="input-tools-group input-tools-secondary">
+            <button type="button" class="voice-btn" id="voiceBtn" title="点击开始语音输入" aria-pressed="false">
+              <svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="3" width="6" height="12" rx="3"></rect>
+                <path d="M5 11a7 7 0 0 0 14 0"></path>
+                <path d="M12 18v3"></path>
+                <path d="M8 21h8"></path>
+              </svg><span class="tool-label">语音输入</span>
+            </button>
+            <label class="file-upload-btn" id="fileBtn" title="上传文件">
+              <svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m20 12-8 8a6 6 0 0 1-8-8l9-9a4 4 0 0 1 6 6l-9 9a2 2 0 0 1-3-3l8-8"></path>
+              </svg><span class="tool-label">上传文件</span>
+              <input type="file" id="fileInput" multiple>
+            </label>
+            <details class="more-tools-wrap">
+              <summary class="more-tools-btn" title="打开更多工具"><svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.6"></circle>
+                <circle cx="12" cy="12" r="1.6"></circle>
+                <circle cx="19" cy="12" r="1.6"></circle>
+              </svg><span>更多工具</span></summary>
+              <div class="more-tools-menu">
+                <button class="ppt-btn" id="pptBtn" type="button"><svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 4h14v16H5z"></path>
+                  <path d="M8 8h8"></path>
+                  <path d="M8 12h5"></path>
+                  <path d="M8 16h7"></path>
+                </svg><span class="tool-label">PPT 制作</span></button>
+                <button class="ppt-btn" id="summaryBtn" type="button"><svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 5h12"></path>
+                  <path d="M6 10h12"></path>
+                  <path d="M6 15h7"></path>
+                  <path d="M6 20h10"></path>
+                </svg><span class="tool-label">上下文摘要</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+        <div class="input-composer" id="inputComposer">
+          <label class="camera-btn" id="cameraBtn" title="拍照上传">
+            <svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 8h4l2-3h4l2 3h4v11H4z"></path>
+              <circle cx="12" cy="13.5" r="3.2"></circle>
+            </svg>
+            <input id="cameraInput" type="file" accept="image/*" capture="environment">
+          </label>
+          <div class="input-row">
+            <textarea id="chatInput" rows="1" placeholder="输入你的问题，Enter 发送……" data-mobile-placeholder="发送消息……"></textarea>
+            <button class="send-btn" id="sendBtn" title="发送消息 (Enter)" aria-label="发送消息">
+              <svg class="send-icon send-icon-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 19V5"></path>
+                <path d="m6 11 6-6 6 6"></path>
+              </svg>
+              <svg class="send-icon send-icon-stop" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="8" y="8" width="8" height="8" rx="1.6"></rect>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="inspector" id="inspector">
+      <button class="close" id="closeInspector">×</button>
+      <div id="inspectorContent"></div>
+    </aside>
+  </div>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-card">
+      <button class="close" id="modalClose">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toasts"></div>
+  <script src="/static/app.js?v=20260924-composer3"></script>
+</body>
+</html>
