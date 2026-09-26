@@ -2191,7 +2191,7 @@ pre {
   }
 }
 
-/* Final neural-trace spacing guard: this must stay at the real end of the file. */
+/* Final neural-trace spacing guard. */
 .message.assistant .cognitive-trace:not(.is-collapsed) {
   padding-top: 15px !important;
   padding-bottom: 20px !important;
@@ -2209,6 +2209,794 @@ pre {
 
 .message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
   min-height: 42px !important;
+}
+
+/* Final sidebar history/trash guard: this must stay at the real end of the file. */
+#panel-history,
+#panel-trash {
+  padding-inline: 14px !important;
+}
+
+#panel-trash .panel-title {
+  margin: 14px 0 10px !important;
+  color: #8a9a92 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+#panel-trash .panel-title::after {
+  content: "删除的对话会在这里保留，可随时恢复";
+  display: block;
+  margin-top: 11px;
+  color: #75857d;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.history-card {
+  position: relative !important;
+  min-height: 82px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.history-card:hover,
+.history-card:focus-within {
+  background: #f8fbf9 !important;
+}
+
+.history-open-area {
+  display: grid !important;
+  width: 100% !important;
+  min-height: 82px !important;
+  gap: 9px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  color: var(--ink) !important;
+  text-align: left !important;
+  background: transparent !important;
+}
+
+.history-open-area strong,
+.trash-card strong {
+  color: #18261f !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.history-open-area small {
+  color: #18261f !important;
+  font-size: 15px !important;
+}
+
+.history-more {
+  position: absolute !important;
+  top: 9px !important;
+  right: 7px !important;
+  z-index: 30 !important;
+}
+
+.history-more summary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 35px !important;
+  height: 35px !important;
+  gap: 3px !important;
+  border-radius: 8px !important;
+  color: #5c6c64 !important;
+  background: #f1f5f2 !important;
+}
+
+.history-more summary span {
+  width: 4px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: currentColor !important;
+}
+
+.history-menu {
+  position: absolute !important;
+  top: 40px !important;
+  right: 0 !important;
+  display: grid !important;
+  width: 140px !important;
+  padding: 8px !important;
+  border: 1px solid #dfe7e2 !important;
+  border-radius: 7px !important;
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 18px 38px rgba(30,46,38,.14) !important;
+}
+
+.history-menu button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  min-height: 31px !important;
+  padding: 0 8px !important;
+  border: 0 !important;
+  color: #5e6f66 !important;
+  background: transparent !important;
+}
+
+.history-menu button.danger {
+  color: #b75050 !important;
+}
+
+.trash-card {
+  position: relative !important;
+  min-height: 76px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.trash-card small {
+  color: #8a9890 !important;
+  font-size: 13px !important;
+}
+
+.trash-card .item-actions {
+  position: absolute !important;
+  right: 13px !important;
+  bottom: 14px !important;
+  display: block !important;
+}
+
+.trash-card .item-actions button {
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+
+/* Target parity: conversation and trash sidebar, final EOF override. */
+.sidebar {
+  background: #f5f8f4 !important;
+}
+
+#panel-history,
+#panel-trash {
+  padding: 0 13px 16px !important;
+}
+
+#historyList,
+#trashList {
+  gap: 2px !important;
+}
+
+#panel-history .panel-title {
+  display: none !important;
+}
+
+#panel-trash .panel-title {
+  margin: 15px 0 8px !important;
+  color: #8b9b92 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+#panel-trash .panel-title::after {
+  content: "删除的对话会在这里保留，可随时恢复";
+  display: block;
+  margin-top: 10px;
+  color: #718278;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.history-card {
+  min-height: 78px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+}
+
+.history-card::before {
+  top: 9px !important;
+  bottom: 9px !important;
+  width: 3px !important;
+  background: #43b37d !important;
+}
+
+.history-card:hover,
+.history-card:focus-within {
+  background: rgba(255,255,255,.62) !important;
+}
+
+.history-open-area {
+  min-height: 78px !important;
+  gap: 8px !important;
+  padding: 11px 48px 11px 14px !important;
+}
+
+.history-open-area strong {
+  max-width: 215px !important;
+  color: #1f2d26 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+.history-open-area small {
+  max-width: 215px !important;
+  color: #1f2d26 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+.history-more {
+  top: 8px !important;
+  right: 7px !important;
+}
+
+.history-more summary {
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 9px !important;
+  color: #435249 !important;
+  background: #eef3ef !important;
+}
+
+.history-more[open] summary,
+.history-more summary:hover {
+  color: #24352c !important;
+  background: #e9f0eb !important;
+}
+
+.history-menu {
+  top: 39px !important;
+  right: -1px !important;
+  width: 140px !important;
+  padding: 8px !important;
+  border-color: #dde6df !important;
+  border-radius: 7px !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(38, 55, 46, .14) !important;
+}
+
+.history-menu button {
+  min-height: 32px !important;
+  border-radius: 5px !important;
+  color: #627269 !important;
+  font-size: 13px !important;
+}
+
+.history-menu button:hover {
+  color: #24352c !important;
+  background: #f3f7f4 !important;
+}
+
+.history-menu button.danger {
+  color: #b25555 !important;
+}
+
+.trash-card {
+  min-height: 72px !important;
+  padding: 12px 43px 12px 14px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+
+.trash-card:hover {
+  background: rgba(255,255,255,.52) !important;
+}
+
+.trash-card strong {
+  color: #1f2d26 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+.trash-card small {
+  color: #8d9a92 !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+
+.trash-card .item-actions {
+  right: 12px !important;
+  bottom: 13px !important;
+}
+
+.trash-card .item-actions button {
+  color: #43a978 !important;
+  font-size: 13px !important;
+}
+
+/* Final sidebar history/trash guard: keep this block at EOF. */
+#panel-history,
+#panel-trash {
+  padding-inline: 14px !important;
+}
+
+#panel-trash .panel-title {
+  margin: 14px 0 10px !important;
+  color: #8a9a92 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+#panel-trash .panel-title::after {
+  content: "删除的对话会在这里保留，可随时恢复";
+  display: block;
+  margin-top: 11px;
+  color: #75857d;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.history-card {
+  position: relative !important;
+  min-height: 82px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.history-card:hover,
+.history-card:focus-within {
+  background: #f8fbf9 !important;
+}
+
+.history-open-area {
+  display: grid !important;
+  width: 100% !important;
+  min-height: 82px !important;
+  gap: 9px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  color: var(--ink) !important;
+  text-align: left !important;
+  background: transparent !important;
+}
+
+.history-open-area strong,
+.trash-card strong {
+  color: #18261f !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.history-open-area small {
+  color: #18261f !important;
+  font-size: 15px !important;
+}
+
+.history-more {
+  position: absolute !important;
+  top: 9px !important;
+  right: 7px !important;
+  z-index: 30 !important;
+}
+
+.history-more summary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 35px !important;
+  height: 35px !important;
+  gap: 3px !important;
+  border-radius: 8px !important;
+  color: #5c6c64 !important;
+  background: #f1f5f2 !important;
+}
+
+.history-more summary span {
+  width: 4px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: currentColor !important;
+}
+
+.history-menu {
+  position: absolute !important;
+  top: 40px !important;
+  right: 0 !important;
+  display: grid !important;
+  width: 140px !important;
+  padding: 8px !important;
+  border: 1px solid #dfe7e2 !important;
+  border-radius: 7px !important;
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 18px 38px rgba(30,46,38,.14) !important;
+}
+
+.history-menu button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  min-height: 31px !important;
+  padding: 0 8px !important;
+  border: 0 !important;
+  color: #5e6f66 !important;
+  background: transparent !important;
+}
+
+.history-menu button.danger {
+  color: #b75050 !important;
+}
+
+.trash-card {
+  position: relative !important;
+  min-height: 76px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.trash-card small {
+  color: #8a9890 !important;
+  font-size: 13px !important;
+}
+
+.trash-card .item-actions {
+  position: absolute !important;
+  right: 13px !important;
+  bottom: 14px !important;
+  display: block !important;
+}
+
+.trash-card .item-actions button {
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+
+/* Final sidebar history/trash guard: keep this at the real EOF. */
+#panel-history,
+#panel-trash {
+  padding-inline: 14px !important;
+}
+
+#panel-trash .panel-title {
+  margin: 14px 0 10px !important;
+  color: #8a9a92 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+#panel-trash .panel-title::after {
+  content: "删除的对话会在这里保留，可随时恢复";
+  display: block;
+  margin-top: 11px;
+  color: #75857d;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.history-card {
+  position: relative !important;
+  min-height: 82px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.history-open-area {
+  display: grid !important;
+  width: 100% !important;
+  min-height: 82px !important;
+  gap: 9px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  color: var(--ink) !important;
+  text-align: left !important;
+  background: transparent !important;
+}
+
+.history-more {
+  position: absolute !important;
+  top: 9px !important;
+  right: 7px !important;
+  z-index: 30 !important;
+}
+
+.history-more summary {
+  display: inline-flex !important;
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 8px !important;
+  background: #f1f5f2 !important;
+}
+
+.history-menu {
+  position: absolute !important;
+  top: 40px !important;
+  right: 0 !important;
+  width: 140px !important;
+  padding: 8px !important;
+  border: 1px solid #dfe7e2 !important;
+  border-radius: 7px !important;
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 18px 38px rgba(30,46,38,.14) !important;
+}
+
+.trash-card {
+  position: relative !important;
+  min-height: 76px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.trash-card .item-actions {
+  position: absolute !important;
+  right: 13px !important;
+  bottom: 14px !important;
+  display: block !important;
+}
+
+.trash-card .item-actions button {
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+
+/* Final history/trash sidebar polish guard. */
+#panel-history,
+#panel-trash {
+  padding-inline: 14px;
+}
+
+#panel-trash .panel-title {
+  margin: 14px 0 10px;
+  color: #8a9a92;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+
+#panel-trash .panel-title::after {
+  content: "删除的对话会在这里保留，可随时恢复";
+  display: block;
+  margin-top: 11px;
+  color: #75857d;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+#historyList,
+#trashList {
+  gap: 6px;
+}
+
+.history-card {
+  position: relative;
+  min-height: 82px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.history-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 13px;
+  bottom: 13px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity .16s ease;
+}
+
+.history-card:hover,
+.history-card:focus-within {
+  background: #f8fbf9;
+}
+
+.history-card:hover::before,
+.history-card:focus-within::before {
+  opacity: 1;
+}
+
+.history-open-area {
+  display: grid;
+  width: 100%;
+  min-height: 82px;
+  gap: 9px;
+  padding: 13px 48px 13px 14px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--ink);
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.history-open-area strong,
+.trash-card strong {
+  color: #18261f;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.history-open-area small {
+  display: block;
+  max-width: 210px;
+  color: #18261f;
+  font-size: 15px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-more {
+  position: absolute;
+  top: 9px;
+  right: 7px;
+  z-index: 6;
+}
+
+.history-more summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  gap: 3px;
+  border-radius: 8px;
+  color: #5c6c64;
+  background: #f1f5f2;
+  cursor: pointer;
+  list-style: none;
+  transition: background .16s ease, color .16s ease;
+}
+
+.history-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.history-more summary span {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.history-more[open] summary,
+.history-more summary:hover {
+  color: #314138;
+  background: #eef4f0;
+}
+
+.history-menu {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  display: grid;
+  width: 140px;
+  padding: 8px;
+  border: 1px solid #dfe7e2;
+  border-radius: 7px;
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 18px 38px rgba(30,46,38,.14);
+}
+
+.history-menu button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 31px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 5px;
+  color: #5e6f66;
+  font-size: 13px;
+  text-align: left;
+  background: transparent;
+}
+
+.history-menu button:hover {
+  color: #26382f;
+  background: #f4f8f5;
+}
+
+.history-menu button.danger {
+  color: #b75050;
+}
+
+.history-menu button.danger:hover {
+  color: #a63f3f;
+  background: #fff4f4;
+}
+
+.history-menu svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trash-card {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  min-height: 76px;
+  padding: 13px 48px 13px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.trash-card:hover {
+  background: #f8fbf9;
+}
+
+.trash-card small {
+  color: #8a9890;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.trash-card .item-actions {
+  position: absolute;
+  right: 13px;
+  bottom: 14px;
+  display: block;
+}
+
+.trash-card .item-actions button {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--accent);
+  font-size: 13px;
+  background: transparent;
+}
+
+.trash-card .item-actions button:hover {
+  color: #26865f;
+  text-decoration: underline;
 }
 
 /* Final neural-trace spacing guard: keep expanded step gaps aligned with the reference. */
@@ -2881,7 +3669,7 @@ select {
   }
 }
 
-/* Final neural-trace spacing guard: this must stay at the real end of the file. */
+/* Final neural-trace spacing guard. */
 .message.assistant .cognitive-trace:not(.is-collapsed) {
   padding-top: 15px !important;
   padding-bottom: 20px !important;
@@ -2899,4 +3687,312 @@ select {
 
 .message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
   min-height: 42px !important;
+}
+
+/* Final sidebar history/trash guard: this must stay at the real end of the file. */
+#panel-history,
+#panel-trash {
+  padding-inline: 14px !important;
+}
+
+#panel-trash .panel-title {
+  margin: 14px 0 10px !important;
+  color: #8a9a92 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+#panel-trash .panel-title::after {
+  content: "删除的对话会在这里保留，可随时恢复";
+  display: block;
+  margin-top: 11px;
+  color: #75857d;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+.history-card {
+  position: relative !important;
+  min-height: 82px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.history-card:hover,
+.history-card:focus-within {
+  background: #f8fbf9 !important;
+}
+
+.history-open-area {
+  display: grid !important;
+  width: 100% !important;
+  min-height: 82px !important;
+  gap: 9px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  color: var(--ink) !important;
+  text-align: left !important;
+  background: transparent !important;
+}
+
+.history-open-area strong,
+.trash-card strong {
+  color: #18261f !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.history-open-area small {
+  color: #18261f !important;
+  font-size: 15px !important;
+}
+
+.history-more {
+  position: absolute !important;
+  top: 9px !important;
+  right: 7px !important;
+  z-index: 30 !important;
+}
+
+.history-more summary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 35px !important;
+  height: 35px !important;
+  gap: 3px !important;
+  border-radius: 8px !important;
+  color: #5c6c64 !important;
+  background: #f1f5f2 !important;
+}
+
+.history-more summary span {
+  width: 4px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: currentColor !important;
+}
+
+.history-menu {
+  position: absolute !important;
+  top: 40px !important;
+  right: 0 !important;
+  display: grid !important;
+  width: 140px !important;
+  padding: 8px !important;
+  border: 1px solid #dfe7e2 !important;
+  border-radius: 7px !important;
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 18px 38px rgba(30,46,38,.14) !important;
+}
+
+.history-menu button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  min-height: 31px !important;
+  padding: 0 8px !important;
+  border: 0 !important;
+  color: #5e6f66 !important;
+  background: transparent !important;
+}
+
+.history-menu button.danger {
+  color: #b75050 !important;
+}
+
+.trash-card {
+  position: relative !important;
+  min-height: 76px !important;
+  padding: 13px 48px 13px 14px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.trash-card small {
+  color: #8a9890 !important;
+  font-size: 13px !important;
+}
+
+.trash-card .item-actions {
+  position: absolute !important;
+  right: 13px !important;
+  bottom: 14px !important;
+  display: block !important;
+}
+
+.trash-card .item-actions button {
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--accent) !important;
+  background: transparent !important;
+}
+
+/* Target parity: conversation and trash sidebar, final EOF override. */
+.sidebar {
+  background: #f5f8f4 !important;
+}
+
+#panel-history,
+#panel-trash {
+  padding: 0 13px 16px !important;
+}
+
+#historyList,
+#trashList {
+  gap: 2px !important;
+}
+
+#panel-history .panel-title {
+  display: none !important;
+}
+
+#panel-trash .panel-title {
+  margin: 15px 0 8px !important;
+  color: #8b9b92 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+#panel-trash .panel-title::after {
+  content: "删除的对话会在这里保留，可随时恢复";
+  display: block;
+  margin-top: 10px;
+  color: #718278;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.history-card {
+  min-height: 78px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+}
+
+.history-card::before {
+  top: 9px !important;
+  bottom: 9px !important;
+  width: 3px !important;
+  background: #43b37d !important;
+}
+
+.history-card:hover,
+.history-card:focus-within {
+  background: rgba(255,255,255,.62) !important;
+}
+
+.history-open-area {
+  min-height: 78px !important;
+  gap: 8px !important;
+  padding: 11px 48px 11px 14px !important;
+}
+
+.history-open-area strong {
+  max-width: 215px !important;
+  color: #1f2d26 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+.history-open-area small {
+  max-width: 215px !important;
+  color: #1f2d26 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+.history-more {
+  top: 8px !important;
+  right: 7px !important;
+}
+
+.history-more summary {
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 9px !important;
+  color: #435249 !important;
+  background: #eef3ef !important;
+}
+
+.history-more[open] summary,
+.history-more summary:hover {
+  color: #24352c !important;
+  background: #e9f0eb !important;
+}
+
+.history-menu {
+  top: 39px !important;
+  right: -1px !important;
+  width: 140px !important;
+  padding: 8px !important;
+  border-color: #dde6df !important;
+  border-radius: 7px !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(38, 55, 46, .14) !important;
+}
+
+.history-menu button {
+  min-height: 32px !important;
+  border-radius: 5px !important;
+  color: #627269 !important;
+  font-size: 13px !important;
+}
+
+.history-menu button:hover {
+  color: #24352c !important;
+  background: #f3f7f4 !important;
+}
+
+.history-menu button.danger {
+  color: #b25555 !important;
+}
+
+.trash-card {
+  min-height: 72px !important;
+  padding: 12px 43px 12px 14px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+
+.trash-card:hover {
+  background: rgba(255,255,255,.52) !important;
+}
+
+.trash-card strong {
+  color: #1f2d26 !important;
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+.trash-card small {
+  color: #8d9a92 !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+
+.trash-card .item-actions {
+  right: 12px !important;
+  bottom: 13px !important;
+}
+
+.trash-card .item-actions button {
+  color: #43a978 !important;
+  font-size: 13px !important;
 }

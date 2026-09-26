@@ -47,6 +47,26 @@ function renderMarkdownLite(text) {
   return html;
 }
 
+function formatHistoryTime(value = "") {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value).slice(0, 16).replace("T", " ");
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function messageEl(role, content = "") {
   const el = document.createElement("article");
   el.className = `message ${role}`;
@@ -219,15 +239,31 @@ async function loadHistory() {
   if (!data.items.length) list.innerHTML = `<div class="muted">暂无对话</div>`;
   data.items.forEach((item) => {
     const row = document.createElement("div");
-    row.className = "list-item";
+    row.className = "list-item history-card";
     row.innerHTML = `
-      <strong>${escapeHtml(item.title)}</strong>
-      <small>${escapeHtml(item.preview || "点击继续这个会话")}</small>
-      <div class="item-actions">
-        <button data-open="${item.id}">打开</button>
-        <button data-rename="${item.id}">重命名</button>
-        <button class="danger" data-delete="${item.id}">删除</button>
-      </div>`;
+      <button class="history-open-area" data-open="${item.id}" aria-label="打开对话 ${escapeHtml(item.title)}">
+        <strong>${escapeHtml(item.title)}</strong>
+        <small>${escapeHtml(item.preview || "点击继续这个会话")}</small>
+      </button>
+      <details class="history-more">
+        <summary aria-label="更多操作">
+          <span></span><span></span><span></span>
+        </summary>
+        <div class="history-menu">
+          <button data-rename="${item.id}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z"/></svg>
+            重命名
+          </button>
+          <button data-export="${item.id}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            导出对话
+          </button>
+          <button class="danger" data-delete="${item.id}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 15h10l1-15"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            删除
+          </button>
+        </div>
+      </details>`;
     list.appendChild(row);
   });
 }
@@ -238,13 +274,12 @@ async function loadTrash() {
   list.innerHTML = data.items.length ? "" : `<div class="muted">回收站为空</div>`;
   data.items.forEach((item) => {
     const row = document.createElement("div");
-    row.className = "list-item";
+    row.className = "list-item trash-card";
     row.innerHTML = `
       <strong>${escapeHtml(item.title)}</strong>
-      <small>${escapeHtml(item.updated_at)}</small>
+      <small>删除于 ${escapeHtml(formatHistoryTime(item.deleted_at || item.updated_at))} · ${Number(item.message_count || 0)}条消息</small>
       <div class="item-actions">
         <button data-restore="${item.id}">恢复</button>
-        <button class="danger" data-hard-delete="${item.id}">彻底删除</button>
       </div>`;
     list.appendChild(row);
   });
@@ -1035,6 +1070,13 @@ function bindEvents() {
         await api(`/api/history/${target.dataset.rename}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title }) });
         loadHistory();
       }
+    }
+    if (target.dataset.export) {
+      const data = await api(`/api/history/${target.dataset.export}`);
+      const title = data.conversation?.title || "对话";
+      const text = data.messages.map((m) => `${m.role === "user" ? "你" : "耦合生命"}：\n${m.content}`).join("\n\n---\n\n");
+      downloadText(`${title}.txt`, text);
+      toast("对话已导出");
     }
     if (target.dataset.delete) {
       await api(`/api/history/${target.dataset.delete}`, { method: "DELETE" });

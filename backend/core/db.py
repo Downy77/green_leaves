@@ -49,7 +49,8 @@ def init_db() -> None:
                 title TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
-                deleted INTEGER NOT NULL DEFAULT 0
+                deleted INTEGER NOT NULL DEFAULT 0,
+                deleted_at TEXT DEFAULT ''
             );
             CREATE TABLE IF NOT EXISTS messages (
                 id TEXT PRIMARY KEY,
@@ -101,6 +102,16 @@ def init_db() -> None:
                 created_at TEXT NOT NULL
             );
             """
+        )
+        columns = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(conversations)").fetchall()
+        }
+        if "deleted_at" not in columns:
+            conn.execute("ALTER TABLE conversations ADD COLUMN deleted_at TEXT DEFAULT ''")
+        conn.execute(
+            "UPDATE conversations SET deleted_at=updated_at "
+            "WHERE deleted=1 AND (deleted_at IS NULL OR deleted_at='')"
         )
         conn.execute("INSERT OR IGNORE INTO profile(id) VALUES (1)")
         conn.execute(
