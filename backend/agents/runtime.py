@@ -190,6 +190,10 @@ class CouplingAgentRuntime:
             attachments=attachments,
         )
 
+        async for piece in self.stream_prepared_answer(state):
+            yield piece
+
+    async def stream_prepared_answer(self, state: AgentState) -> AsyncIterator[str]:
         if os.getenv("OPENAI_API_KEY"):
             async for piece in self._stream_model(state):
                 yield piece

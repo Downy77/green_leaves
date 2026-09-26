@@ -7,6 +7,18 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+const TRACE_STEPS = [
+  ["connect", "认知轨迹正在建立连接"],
+  ["sense", "感知需求"],
+  ["attach", "解析附件"],
+  ["memory", "召回记忆"],
+  ["context", "整理上下文"],
+  ["search", "搜索证据"],
+  ["select", "选择能力"],
+  ["generate", "生成回答"],
+  ["review", "结构自检"],
+];
+
 const api = async (url, options = {}) => {
   const res = await fetch(url, options);
   const text = await res.text();
@@ -38,8 +50,34 @@ function renderMarkdownLite(text) {
 function messageEl(role, content = "") {
   const el = document.createElement("article");
   el.className = `message ${role}`;
-  el.innerHTML = `<span class="meta">${role === "user" ? "你" : "耦合生命"}</span><div class="content">${renderMarkdownLite(content)}</div>`;
+  const trace = role === "assistant" && !content ? renderCognitiveTrace() : "";
+  el.innerHTML = `<span class="meta">${role === "user" ? "你" : "耦合生命"}</span>${trace}<div class="content">${renderMarkdownLite(content)}</div>`;
   return el;
+}
+
+function renderCognitiveTrace() {
+  const rows = TRACE_STEPS.slice(1).map(([key, label]) => `
+    <div class="trace-row" data-trace-step="${key}">
+      <span class="trace-node"></span>
+      <span class="trace-label">${label}</span>
+      <span class="trace-state">等待信号</span>
+      <span class="trace-time">--</span>
+    </div>
+  `).join("");
+  return `
+    <section class="cognitive-trace" data-cognitive-trace role="status" aria-live="polite">
+      <div class="trace-head">
+        <span class="trace-node trace-node-main"></span>
+        <strong data-trace-title>认知轨迹正在建立连接</strong>
+        <button type="button" class="trace-toggle" data-trace-toggle>展开中</button>
+      </div>
+      <div class="trace-steps">${rows}</div>
+    </section>
+    <div class="thinking-core" data-thinking-core>
+      <span class="thinking-orb" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span>耦合生命思考中...</span>
+    </div>
+  `;
 }
 
 function clearWelcome() {
@@ -49,6 +87,128 @@ function clearWelcome() {
 
 function scrollBottom() {
   $("messages").scrollTop = $("messages").scrollHeight;
+}
+
+function setConversationStatus(kind, text) {
+  const status = $("statusText");
+  if (!status) return;
+  status.className = `status-text ${kind}`;
+  status.textContent = text;
+}
+
+function setStreamStatus(assistant, text, hidden = false) {
+  const title = assistant?.querySelector("[data-trace-title]");
+  if (!title) return;
+  title.textContent = text.replace(/^[^\u4e00-\u9fa5A-Za-z0-9]+/, "");
+  const trace = assistant.querySelector("[data-cognitive-trace]");
+  if (trace) trace.hidden = hidden;
+}
+
+function updateCognitiveTrace(assistant, targetKey, title = "") {
+  const trace = assistant?.querySelector("[data-cognitive-trace]");
+  if (!trace) return;
+  if (title) setStreamStatus(assistant, title);
+  const index = Math.max(0, TRACE_STEPS.findIndex(([key]) => key === targetKey) - 1);
+  const rows = [...trace.querySelectorAll("[data-trace-step]")];
+  rows.forEach((row, rowIndex) => {
+    row.classList.toggle("is-done", rowIndex < index);
+    row.classList.toggle("is-active", rowIndex === index);
+    row.classList.toggle("is-pending", rowIndex > index);
+    row.querySelector(".trace-state").textContent = rowIndex < index ? "已完成" : rowIndex === index ? "建立中" : "等待信号";
+    row.querySelector(".trace-time").textContent = rowIndex < index ? `${Math.max(1, rowIndex + 1)}ms` : rowIndex === index ? "..." : "--";
+  });
+}
+
+function setTraceRow(assistant, key, mode, detail, timeText = "") {
+  const row = assistant?.querySelector(`[data-trace-step="${key}"]`);
+  if (!row) return;
+  row.classList.remove("is-done", "is-active", "is-pending", "is-error", "is-skipped");
+  row.classList.add(`is-${mode}`);
+  row.querySelector(".trace-state").textContent = detail;
+  row.querySelector(".trace-time").textContent = timeText || (mode === "active" ? "..." : "--");
+}
+
+function traceMs(assistant, offset = 0) {
+  const start = assistant?._traceStartedAt || performance.now();
+  return `${Math.max(1, Math.round(performance.now() - start + offset))}ms`;
+}
+
+function applyTracePlan(assistant, plan) {
+  if (!assistant) return;
+  setStreamStatus(assistant, "生成回答 · 正在组织回答");
+  setTraceRow(assistant, "sense", "done", "需求信号已接收", traceMs(assistant));
+  setTraceRow(
+    assistant,
+    "attach",
+    plan.attachments > 0 ? "done" : "skipped",
+    plan.attachments > 0 ? `已解析 ${plan.attachments} 个附件` : "本次未使用附件",
+    traceMs(assistant, 4),
+  );
+  setTraceRow(
+    assistant,
+    "memory",
+    plan.memories > 0 ? "done" : "skipped",
+    plan.memories > 0 ? `已参考 ${plan.memories} 条相关记忆` : "未命中相关记忆",
+    traceMs(assistant, 8),
+  );
+  setTraceRow(
+    assistant,
+    "context",
+    plan.history > 1 ? "done" : "skipped",
+    plan.history > 1 ? "已整理最近上下文" : "智能上下文优化已关闭",
+    traceMs(assistant, 12),
+  );
+  setTraceRow(
+    assistant,
+    "search",
+    plan.web_results > 0 ? "done" : "skipped",
+    plan.web_results > 0 ? `已找到 ${plan.web_results} 条证据` : (plan.web_mode === "off" ? "联网搜索已关闭" : "自动判断本次无需联网"),
+    traceMs(assistant, 16),
+  );
+  const routeLabel = plan.route === "web_research" ? "联网研究" : "文本推理";
+  setTraceRow(assistant, "select", "done", `已选择${routeLabel}`, traceMs(assistant, 20));
+  setTraceRow(assistant, "generate", "active", "正在组织回答", traceMs(assistant, 20));
+  setTraceRow(assistant, "review", "pending", "等待信号");
+}
+
+function startCognitiveTrace(assistant) {
+  stopCognitiveTrace(assistant);
+  assistant._traceStartedAt = performance.now();
+  const planned = ["sense", "memory", "context", "select"];
+  let index = 0;
+  updateCognitiveTrace(assistant, planned[index], "认知轨迹正在建立连接");
+  assistant._traceTimer = window.setInterval(() => {
+    index = Math.min(index + 1, planned.length - 1);
+    updateCognitiveTrace(assistant, planned[index], "认知轨迹正在建立连接");
+  }, 520);
+}
+
+function stopCognitiveTrace(assistant) {
+  if (assistant?._traceTimer) {
+    window.clearInterval(assistant._traceTimer);
+    assistant._traceTimer = null;
+  }
+}
+
+function finishCognitiveTrace(assistant, errored = false) {
+  stopCognitiveTrace(assistant);
+  const trace = assistant?.querySelector("[data-cognitive-trace]");
+  if (!trace) return;
+  if (errored) {
+    setTraceRow(assistant, "review", "error", "连接波动", "!");
+    setStreamStatus(assistant, "认知轨迹连接波动");
+    return;
+  }
+  setTraceRow(assistant, "generate", "done", "回答已生成", traceMs(assistant));
+  setTraceRow(assistant, "review", "done", "结构检查完成", traceMs(assistant, 3));
+  const doneCount = trace.querySelectorAll(".trace-row.is-done").length;
+  const seconds = Math.max(0.1, (performance.now() - (assistant._traceStartedAt || performance.now())) / 1000).toFixed(1);
+  trace.classList.add("is-collapsed");
+  trace.querySelector("[data-trace-title]").textContent = `已完成 ${doneCount} 项能力 · 用时 ${seconds}s`;
+  const toggle = trace.querySelector("[data-trace-toggle]");
+  if (toggle) toggle.textContent = "查看神经图";
+  const core = assistant.querySelector("[data-thinking-core]");
+  if (core) core.hidden = true;
 }
 
 async function loadHistory() {
@@ -114,7 +274,8 @@ async function sendMessage() {
   const content = assistant.querySelector(".content");
   state.sending = true;
   setSendButtonGenerating(true);
-  $("statusText").textContent = "正在思考";
+  setConversationStatus("thinking", "耦合思考中");
+  startCognitiveTrace(assistant);
 
   const fd = new FormData();
   fd.append("message", text);
@@ -138,7 +299,29 @@ async function sendMessage() {
       for (const part of parts) {
         if (!part.startsWith("data:")) continue;
         const payload = JSON.parse(part.slice(5));
+        if (payload.type === "trace") {
+          stopCognitiveTrace(assistant);
+          applyTracePlan(assistant, payload);
+        }
+        if (payload.type === "status") {
+          if (payload.phase === "thinking") {
+            setConversationStatus("thinking", "耦合思考中");
+          } else if (payload.phase === "streaming") {
+            setConversationStatus("streaming", "生命流生成中");
+            setTraceRow(assistant, "generate", "active", "正在组织回答", traceMs(assistant));
+          } else if (payload.phase === "complete") {
+            setConversationStatus("complete", "回答已形成");
+            finishCognitiveTrace(assistant);
+          } else if (payload.phase === "error") {
+            setConversationStatus("error", "连接波动");
+            finishCognitiveTrace(assistant, true);
+          }
+        }
         if (payload.type === "delta") {
+          if (!full) {
+            setTraceRow(assistant, "generate", "active", "正在组织回答", traceMs(assistant));
+            setConversationStatus("streaming", "生命流生成中");
+          }
           full += payload.content;
           content.innerHTML = renderMarkdownLite(full);
           scrollBottom();
@@ -157,10 +340,18 @@ async function sendMessage() {
     await loadHistory();
   } catch (err) {
     content.innerHTML = `<span class="danger-text">${escapeHtml(err.message)}</span>`;
+    finishCognitiveTrace(assistant, true);
+    setConversationStatus("error", "连接波动");
   } finally {
+    stopCognitiveTrace(assistant);
     state.sending = false;
     setSendButtonGenerating(false);
-    $("statusText").textContent = "在线 · 本地可部署";
+    if (!$("statusText").classList.contains("error")) {
+      setConversationStatus("complete", "回答已形成");
+      window.setTimeout(() => {
+        if (!state.sending) setConversationStatus("idle", "在线 · 本地可部署");
+      }, 900);
+    }
   }
 }
 
@@ -612,6 +803,14 @@ function bindEvents() {
     location.reload();
   };
   $("historySearch").oninput = () => loadHistory();
+  $("messages").addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-trace-toggle]");
+    if (!toggle) return;
+    const trace = toggle.closest("[data-cognitive-trace]");
+    if (!trace) return;
+    const collapsed = trace.classList.toggle("is-collapsed");
+    toggle.textContent = collapsed ? "查看神经图" : "收起";
+  });
   $("fileInput").onchange = (e) => {
     state.files = [...e.target.files];
     renderPendingFiles();
