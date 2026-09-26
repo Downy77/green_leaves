@@ -113,8 +113,8 @@ def init_db() -> None:
                 "INSERT INTO announcements(id,title,content,created_at) VALUES (?,?,?,?)",
                 (
                     secrets.token_hex(8),
-                    "欢迎使用耦合生命复刻版",
-                    "这是一个可部署的 AI 工作台复刻实现。",
+                    "欢迎使用绿叶脉络",
+                    "这是一个可部署的 AI 工作台实现。",
                     now_iso(),
                 ),
             )
@@ -123,4 +123,7 @@ def init_db() -> None:
 @asynccontextmanager
 async def lifespan(_: Any):
     init_db()
+    from backend.services.chat_store import init_chat_store
+
+    init_chat_store()
     yield

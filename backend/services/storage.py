@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import json
-import secrets
 import shutil
+import secrets
 import time
 from pathlib import Path
 from typing import Any
@@ -11,6 +10,7 @@ from fastapi import UploadFile
 
 from backend.core.config import UPLOAD_DIR
 from backend.core.db import db, now_iso, row_to_dict
+from backend.services.chat_store import add_message, ensure_conversation, recent_context
 
 
 def get_setting(key: str, default: str = "") -> str:
@@ -22,64 +22,6 @@ def get_setting(key: str, default: str = "") -> str:
 def set_setting(key: str, value: str) -> None:
     with db() as conn:
         conn.execute("INSERT OR REPLACE INTO settings(key,value) VALUES (?,?)", (key, value))
-
-
-def ensure_conversation(session_id: str | None, title: str = "新对话") -> str:
-    conversation_id = session_id or secrets.token_hex(12)
-    with db() as conn:
-        if not conn.execute("SELECT id FROM conversations WHERE id=?", (conversation_id,)).fetchone():
-            timestamp = now_iso()
-            conn.execute(
-                "INSERT INTO conversations(id,title,created_at,updated_at) VALUES (?,?,?,?)",
-                (conversation_id, title, timestamp, timestamp),
-            )
-    return conversation_id
-
-
-def add_message(
-    conversation_id: str,
-    role: str,
-    content: str,
-    attachments: list[dict[str, Any]] | None = None,
-) -> str:
-    message_id = secrets.token_hex(12)
-    with db() as conn:
-        timestamp = now_iso()
-        conn.execute(
-            "INSERT INTO messages(id,conversation_id,role,content,attachments,created_at) "
-            "VALUES (?,?,?,?,?,?)",
-            (
-                message_id,
-                conversation_id,
-                role,
-                content,
-                json.dumps(attachments or [], ensure_ascii=False),
-                timestamp,
-            ),
-        )
-        current = conn.execute(
-            "SELECT title FROM conversations WHERE id=?", (conversation_id,)
-        ).fetchone()
-        if current and current["title"] == "新对话" and role == "user":
-            title = content.strip().splitlines()[0][:42] or "新对话"
-            conn.execute(
-                "UPDATE conversations SET title=? WHERE id=?", (title, conversation_id)
-            )
-        conn.execute(
-            "UPDATE conversations SET updated_at=? WHERE id=?",
-            (timestamp, conversation_id),
-        )
-    return message_id
-
-
-def recent_context(conversation_id: str, limit: int = 8) -> list[dict[str, str]]:
-    with db() as conn:
-        rows = conn.execute(
-            "SELECT role,content FROM messages WHERE conversation_id=? "
-            "ORDER BY created_at DESC LIMIT ?",
-            (conversation_id, limit),
-        ).fetchall()
-    return [{"role": row["role"], "content": row["content"]} for row in reversed(rows)]
 
 
 def save_upload(file: UploadFile) -> dict[str, Any]:

@@ -88,7 +88,7 @@ python main.py
 
 ## 环境变量
 
-复制 `.env.example` 并按需设置环境变量。项目不会自动读取 `.env` 文件，因此可以在 PowerShell 中直接设置：
+复制 `.env.example` 为 `.env` 并按需设置环境变量。项目启动时会自动读取项目根目录的 `.env`；也可以在 PowerShell 中直接设置：
 
 ```powershell
 $env:OPENAI_API_KEY = "你的 API Key"
@@ -98,6 +98,78 @@ python main.py
 ```
 
 未配置 `OPENAI_API_KEY` 时，聊天接口仍然可以离线运行，但会使用 LangGraph 的本地回复节点；配置后会使用 LangChain 的异步流式模型。配置 `TAVILY_API_KEY` 后，联网模式会启用 Tavily 检索。
+
+### 对话数据存储到 PostgreSQL
+
+默认情况下，对话数据仍然存储在本地 SQLite，便于 PyCharm 直接运行。如果要把普通对话相关数据存到 PostgreSQL，配置：
+
+```env
+CHAT_DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/green_leaves
+```
+
+配置后以下聊天数据会写入 PostgreSQL：
+
+- `conversations`
+- `messages`
+- `/api/history`
+- `/api/trash`
+- `/api/chat/stream` 中的用户消息和 AI 回复
+- LangGraph 读取最近对话上下文时使用的消息历史
+
+长期记忆、知识库、系统设置等非对话表暂时仍使用 SQLite，以便分阶段迁移。应用启动时会自动在 PostgreSQL 中创建 `conversations` 和 `messages` 表及索引。
+
+如果你已经在本地 SQLite 里有旧对话，配置好 `CHAT_DATABASE_URL` 后可以执行一次迁移：
+
+```powershell
+python scripts/migrate_chat_sqlite_to_pg.py
+```
+
+迁移脚本只复制 `conversations` 和 `messages`，不会删除 SQLite 原数据；重复执行会按消息 ID 和会话 ID 覆盖更新，避免重复插入。
+
+### Docker 一键启动 PostgreSQL
+
+项目已提供 `docker-compose.yml`，会同时启动应用和 PostgreSQL。应用容器内会自动连接数据库容器：
+
+```env
+CHAT_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/green_leaves
+```
+
+启动：
+
+```powershell
+docker compose up -d --build
+```
+
+打开：
+
+```text
+http://127.0.0.1:8000/
+```
+
+查看运行状态：
+
+```powershell
+docker compose ps
+docker compose logs -f app
+```
+
+停止：
+
+```powershell
+docker compose down
+```
+
+如果要连本机数据库工具，连接信息是：
+
+```text
+Host: 127.0.0.1
+Port: 5433
+Database: green_leaves
+User: postgres
+Password: postgres
+```
+
+PostgreSQL 数据会保存在 Docker volume `postgres_data` 中，应用上传文件和本地 SQLite 兜底数据会保存在 `app_data` 中。普通停止不会删除数据；如果你要彻底清空 Docker 数据，才使用 `docker compose down -v`。
 
 ## 智能体流程
 
