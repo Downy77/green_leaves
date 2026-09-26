@@ -99,6 +99,10 @@ python main.py
 
 未配置 `OPENAI_API_KEY` 时，聊天接口仍然可以离线运行，但会使用 LangGraph 的本地回复节点；配置后会使用 LangChain 的异步流式模型。配置 `TAVILY_API_KEY` 后，联网模式会启用 Tavily 检索。
 
+输入栏下方可为每条消息选择服务商和模型，选择会保存在当前浏览器中。支持 OpenAI（也可沿用已有 `OPENAI_BASE_URL` 兼容接口）、DeepSeek 和 Gemini。分别配置 `OPENAI_API_KEY`、`DEEPSEEK_API_KEY`、`GEMINI_API_KEY` 后，对应选项才可选择；未配置任何密钥时，OpenAI 默认选项仍使用本地回复。
+
+DeepSeek 默认使用 `https://api.deepseek.com`，提供 `deepseek-flash`、`deepseek-v4-pro`；Gemini 默认使用 Google 的 OpenAI 兼容接口，提供 `gemini-3.8-flash`、`gemini-3.5-flash`。如需使用其他模型或兼容网关，可分别设置 `DEEPSEEK_MODELS`、`GEMINI_MODELS`（逗号分隔），以及相应的 `*_BASE_URL`。`*_MODEL` 指定该服务商的首选模型。模型是否可调用取决于相应 API 账号和服务端支持情况。
+
 ### 对话数据存储到 PostgreSQL
 
 默认情况下，对话数据仍然存储在本地 SQLite，便于 PyCharm 直接运行。如果要把普通对话相关数据存到 PostgreSQL，配置：

@@ -9,6 +9,8 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
+from backend.core.config import provider_connection
+
 
 class AgentStore(Protocol):
     def setting(self, key: str, default: str = "") -> str:
@@ -28,6 +30,8 @@ class AgentState(TypedDict, total=False):
     conversation_id: str
     user_message: str
     web_mode: str
+    model: str
+    provider: str
     attachments: list[dict[str, Any]]
     memory_enabled: bool
     knowledge_enabled: bool
@@ -173,11 +177,13 @@ class CouplingAgentRuntime:
             blocks.append("联网检索:\n" + "\n".join(lines))
         return "\n\n".join(blocks) or "没有额外上下文。"
 
-    async def prepare(self, *, conversation_id: str, user_message: str, web_mode: str, attachments: list[dict[str, Any]]) -> AgentState:
+    async def prepare(self, *, conversation_id: str, user_message: str, web_mode: str, model: str, provider: str, attachments: list[dict[str, Any]]) -> AgentState:
         state: AgentState = {
             "conversation_id": conversation_id,
             "user_message": user_message,
             "web_mode": web_mode,
+            "model": model,
+            "provider": provider,
             "attachments": attachments,
         }
         config = {"configurable": {"thread_id": conversation_id}}
@@ -189,12 +195,16 @@ class CouplingAgentRuntime:
         conversation_id: str,
         user_message: str,
         web_mode: str,
+        model: str,
+        provider: str,
         attachments: list[dict[str, Any]],
     ) -> AsyncIterator[str]:
         state = await self.prepare(
             conversation_id=conversation_id,
             user_message=user_message,
             web_mode=web_mode,
+            model=model,
+            provider=provider,
             attachments=attachments,
         )
 
@@ -202,7 +212,8 @@ class CouplingAgentRuntime:
             yield piece
 
     async def stream_prepared_answer(self, state: AgentState) -> AsyncIterator[str]:
-        if os.getenv("OPENAI_API_KEY"):
+        api_key, _ = provider_connection(state["provider"])
+        if api_key:
             async for piece in self._stream_model(state):
                 yield piece
             return
@@ -213,10 +224,12 @@ class CouplingAgentRuntime:
     async def _stream_model(self, state: AgentState) -> AsyncIterator[str]:
         from langchain_openai import ChatOpenAI
 
+        api_key, base_url = provider_connection(state["provider"])
+
         model = ChatOpenAI(
-            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            base_url=os.getenv("OPENAI_BASE_URL") or None,
+            model=state["model"],
+            api_key=api_key,
+            base_url=base_url,
             temperature=0.2,
             streaming=True,
         )
@@ -244,7 +257,7 @@ class CouplingAgentRuntime:
         if attachment_count:
             answer += f"\n\n我看到了 {attachment_count} 个附件，已保存到本地工作区。"
         answer += (
-            "\n\n配置 `OPENAI_API_KEY` 后会自动切换到 LangChain 流式模型；"
+            "\n\n配置所选服务商的 API Key 后会自动切换到 LangChain 流式模型；"
             "配置 `TAVILY_API_KEY` 后可以启用联网检索。"
         )
         for chunk in self._chunk_text(answer):

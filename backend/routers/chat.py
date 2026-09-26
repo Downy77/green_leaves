@@ -3,13 +3,24 @@ from __future__ import annotations
 import json
 from typing import AsyncIterator
 
-from fastapi import APIRouter, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 
+from backend.core.config import available_models
 from backend.services.agent_service import get_agent_runtime
 from backend.services.storage import add_message, ensure_conversation, save_upload
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
+
+
+@router.get("/models")
+def chat_models() -> dict:
+    models = available_models()
+    first_configured = next((item for item in models if item["configured"]), models[0])
+    return {
+        "models": models,
+        "default": first_configured["id"],
+    }
 
 
 @router.post("/stream")
@@ -18,6 +29,13 @@ async def chat_stream(request: Request) -> StreamingResponse:
     message = str(form.get("message") or "")
     session_id = str(form.get("session_id") or "") or None
     web_mode = str(form.get("web_search_mode") or "auto")
+    models = available_models()
+    selected_id = str(form.get("model") or "").strip() or chat_models()["default"]
+    selected = next((item for item in models if item["id"] == selected_id), None)
+    if selected is None:
+        raise HTTPException(status_code=400, detail="所选模型不可用，请刷新页面后重试。")
+    if not selected["configured"] and not (selected["provider"] == "openai" and not any(item["configured"] for item in models)):
+        raise HTTPException(status_code=400, detail=f"请先配置 {selected['provider_label']} 的 API Key。")
     conversation_id = ensure_conversation(session_id)
     attachments = [
         save_upload(value)
@@ -36,6 +54,8 @@ async def chat_stream(request: Request) -> StreamingResponse:
                 conversation_id=conversation_id,
                 user_message=message,
                 web_mode=web_mode,
+                model=selected["model"],
+                provider=selected["provider"],
                 attachments=attachments,
             )
             trace = {

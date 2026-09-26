@@ -4,6 +4,8 @@ const state = {
   tts: false,
   sending: false,
   webMode: localStorage.getItem("clone_web_mode") || "auto",
+  model: "",
+  models: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -240,10 +242,12 @@ async function loadHistory() {
   data.items.forEach((item) => {
     const row = document.createElement("div");
     row.className = "list-item history-card";
+    row.classList.toggle("is-active", String(item.id) === String(state.sessionId));
+    const preview = String(item.preview || "点击继续这个会话").replace(/\s+/g, " ").trim();
     row.innerHTML = `
-      <button class="history-open-area" data-open="${item.id}" aria-label="打开对话 ${escapeHtml(item.title)}">
+      <button class="history-open-area" data-open="${item.id}" aria-label="打开对话 ${escapeHtml(item.title)}"${row.classList.contains("is-active") ? ' aria-current="page"' : ""}>
         <strong>${escapeHtml(item.title)}</strong>
-        <small>${escapeHtml(item.preview || "点击继续这个会话")}</small>
+        <small>${escapeHtml(preview)}</small>
       </button>
       <details class="history-more">
         <summary aria-label="更多操作">
@@ -289,6 +293,12 @@ async function openConversation(id) {
   const data = await api(`/api/history/${id}`);
   state.sessionId = id;
   localStorage.setItem("clone_session_id", id);
+  document.querySelectorAll("#historyList .history-card").forEach((row) => {
+    const active = row.querySelector("[data-open]")?.dataset.open === String(id);
+    row.classList.toggle("is-active", active);
+    if (active) row.querySelector("[data-open]").setAttribute("aria-current", "page");
+    else row.querySelector("[data-open]")?.removeAttribute("aria-current");
+  });
   $("conversationTitle").textContent = data.conversation.title;
   $("messages").innerHTML = "";
   data.messages.forEach((m) => $("messages").appendChild(messageEl(m.role, m.content)));
@@ -316,11 +326,15 @@ async function sendMessage() {
   fd.append("message", text);
   fd.append("session_id", state.sessionId);
   fd.append("web_search_mode", state.webMode);
+  fd.append("model", state.model);
   state.files.forEach((file) => fd.append("files", file));
 
   try {
     const res = await fetch("/api/chat/stream", { method: "POST", body: fd });
-    if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok || !res.body) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.detail || `HTTP ${res.status}`);
+    }
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
@@ -407,6 +421,63 @@ function setWebSearchMode(mode) {
   });
   $("webSearchModeMenu").classList.remove("open");
   $("webSearchBtn").setAttribute("aria-expanded", "false");
+}
+
+function closeModelMenu(restoreFocus = false) {
+  $("modelMenu").classList.remove("open");
+  $("modelBtn").setAttribute("aria-expanded", "false");
+  if (restoreFocus) $("modelBtn").focus();
+}
+
+function setSelectedModel(id) {
+  const selected = state.models.find((model) => model.id === id);
+  if (!selected) return;
+  state.model = id;
+  localStorage.setItem("clone_model", id);
+  const provider = selected.provider === "openai" ? "OpenAI" : selected.provider_label;
+  $("modelBtnLabel").textContent = `${provider} · ${selected.model}`;
+  $("modelBtn").title = `${provider} · ${selected.model}`;
+  $("modelBtn").setAttribute("aria-label", `当前模型：${provider} ${selected.model}，点击切换`);
+  $("modelMenu").querySelectorAll("[data-model-id]").forEach((button) => {
+    button.setAttribute("aria-checked", button.dataset.modelId === id ? "true" : "false");
+  });
+  closeModelMenu();
+}
+
+async function loadModels() {
+  const menu = $("modelMenu");
+  try {
+    const data = await api("/api/chat/models");
+    state.models = data.models;
+    const hasConfigured = data.models.some((model) => model.configured);
+    const groups = new Map();
+    for (const model of data.models) {
+      if (!groups.has(model.provider)) {
+        groups.set(model.provider, { label: model.provider_label, models: [] });
+      }
+      groups.get(model.provider).models.push(model);
+    }
+    menu.innerHTML = [...groups.values()].map((group) => `
+      <div class="model-menu-group" role="group" aria-label="${escapeHtml(group.label)}">
+        <div class="model-menu-heading">${escapeHtml(group.label)}</div>
+        ${group.models.map((model) => {
+          const unavailable = !model.configured && (hasConfigured || model.provider !== "openai");
+          return `<button type="button" class="model-menu-option" role="menuitemradio" data-model-id="${escapeHtml(model.id)}" aria-checked="false" ${unavailable ? "disabled" : ""}>
+            <span class="model-menu-option-copy"><strong>${escapeHtml(model.model)}</strong><small>${unavailable ? "需配置 API Key" : "可用"}</small></span>
+            <span class="model-menu-check" aria-hidden="true">✓</span>
+          </button>`;
+        }).join("")}
+      </div>
+    `).join("");
+    const saved = localStorage.getItem("clone_model");
+    const migrated = saved && !saved.includes(":") ? `openai:${saved}` : saved;
+    const selected = data.models.some((item) => item.id === migrated && (item.configured || !hasConfigured && item.provider === "openai")) ? migrated : data.default;
+    setSelectedModel(selected);
+    $("modelBtn").disabled = false;
+  } catch (error) {
+    $("modelBtnLabel").textContent = "模型加载失败";
+    toast(`无法读取模型列表：${error.message}`);
+  }
 }
 
 function renderPendingFiles() {
@@ -817,6 +888,32 @@ function applyUi() {
 }
 
 function bindEvents() {
+  $("modelBtn").onclick = () => {
+    const open = $("modelMenu").classList.toggle("open");
+    $("modelBtn").setAttribute("aria-expanded", String(open));
+    if (open) {
+      $("webSearchModeMenu").classList.remove("open");
+      $("webSearchBtn").setAttribute("aria-expanded", "false");
+    }
+  };
+  $("modelMenu").onclick = (event) => {
+    const option = event.target.closest("[data-model-id]");
+    if (option && !option.disabled) setSelectedModel(option.dataset.modelId);
+  };
+  $("modelPicker").onkeydown = (event) => {
+    if (event.key === "Escape") {
+      closeModelMenu(true);
+      event.stopPropagation();
+    }
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!$("modelMenu").classList.contains("open")) $("modelBtn").click();
+      const items = [...$("modelMenu").querySelectorAll("[data-model-id]:not(:disabled)")];
+      const current = items.indexOf(document.activeElement);
+      const next = event.key === "ArrowDown" ? (current + 1) % items.length : (current - 1 + items.length) % items.length;
+      items[next]?.focus();
+    }
+  };
   $("sendBtn").onclick = sendMessage;
   $("chatInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -1039,6 +1136,7 @@ function bindEvents() {
     };
   });
   document.body.addEventListener("click", async (event) => {
+    if (!event.target.closest("#modelPicker")) closeModelMenu();
     if (!event.target.closest("#webSearchModeWrap")) {
       $("webSearchModeMenu").classList.remove("open");
       $("webSearchBtn").setAttribute("aria-expanded", "false");
@@ -1126,7 +1224,7 @@ async function boot() {
   applyUi();
   bindEvents();
   drawLife();
-  await Promise.all([loadHistory(), loadSettings(), loadKnowledge()]);
+  await Promise.all([loadHistory(), loadSettings(), loadKnowledge(), loadModels()]);
   if (state.sessionId) {
     try { await openConversation(state.sessionId); } catch { state.sessionId = ""; }
   }

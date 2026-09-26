@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>绿叶脉络</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260926-history-trash2">
+  <link rel="stylesheet" href="/static/styles.css?v=20260926-history-polish">
 </head>
 <body>
   <div class="app-shell">
@@ -224,6 +224,14 @@
         <div id="fileList" class="file-list-clone"></div>
         <div class="input-tools input-tools-top" id="inputToolsTop">
           <div class="input-tools-group input-tools-primary">
+            <div class="model-picker" id="modelPicker">
+              <button class="model-picker-btn" id="modelBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="modelMenu" aria-label="选择大模型" disabled>
+                <svg class="input-tool-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9L12 3Z"></path><path d="m19 18 .7 1.3L21 20l-1.3.7L19 22l-.7-1.3L17 20l1.3-.7L19 18Z"></path></svg>
+                <span id="modelBtnLabel">加载模型…</span>
+                <svg class="model-picker-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3"></path></svg>
+              </button>
+              <div class="model-picker-menu" id="modelMenu" role="menu" aria-label="选择大模型"></div>
+            </div>
             <div class="web-search-mode-wrap" id="webSearchModeWrap">
               <button type="button" class="web-search-btn" id="webSearchBtn" aria-haspopup="menu" aria-expanded="false" title="选择联网搜索模式">
                 <span class="dot"></span><span class="search-mode-label" id="webSearchModeLabel">联网 · 自动</span>
@@ -320,6 +328,6 @@
   </div>
 
   <div class="toast-stack" id="toasts"></div>
-  <script src="/static/app.js?v=20260926-history-trash2"></script>
+  <script src="/static/app.js?v=20260926-history-polish"></script>
 </body>
 </html>

@@ -2191,24 +2191,130 @@ pre {
   }
 }
 
-/* Final neural-trace spacing guard. */
-.message.assistant .cognitive-trace:not(.is-collapsed) {
-  padding-top: 15px !important;
-  padding-bottom: 20px !important;
+.model-picker {
+  position: relative;
+  z-index: 8;
+  flex: 0 0 auto;
 }
 
-.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps {
-  margin-top: 19px !important;
-  margin-bottom: 4px !important;
+.model-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 31px;
+  max-width: 230px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 11px;
+  cursor: pointer;
 }
 
-.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps::before {
-  top: 13px !important;
-  bottom: 13px !important;
+.model-picker-btn:hover,
+.model-picker-btn[aria-expanded="true"] {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
-.message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
-  min-height: 42px !important;
+.model-picker-btn:focus-visible,
+.model-menu-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.model-picker-btn:disabled { opacity: .55; cursor: default; }
+
+#modelBtnLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-picker-chevron {
+  width: 11px;
+  min-width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  transition: transform .18s ease;
+}
+
+.model-picker-btn[aria-expanded="true"] .model-picker-chevron { transform: rotate(180deg); }
+
+.model-picker-menu {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  display: none;
+  width: 250px;
+  max-height: min(370px, 55vh);
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 14px 32px rgba(38,55,46,.15);
+}
+
+.model-picker-menu.open { display: block; }
+
+.model-menu-group + .model-menu-group {
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+
+.model-menu-heading {
+  padding: 5px 9px 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+
+.model-menu-option {
+  display: flex;
+  width: 100%;
+  min-height: 43px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 9px;
+  border-radius: 4px;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.model-menu-option:hover:not(:disabled),
+.model-menu-option[aria-checked="true"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.model-menu-option:disabled { opacity: .48; cursor: default; }
+
+.model-menu-option-copy { display: grid; min-width: 0; gap: 2px; }
+.model-menu-option-copy strong { overflow: hidden; font-size: 11px; font-weight: 620; text-overflow: ellipsis; white-space: nowrap; }
+.model-menu-option-copy small { color: var(--muted); font-size: 9px; }
+.model-menu-check { visibility: hidden; color: var(--accent); font-size: 13px; }
+.model-menu-option[aria-checked="true"] .model-menu-check { visibility: visible; }
+
+@media (max-width: 900px) {
+  .model-picker-menu {
+    position: fixed;
+    right: 12px;
+    bottom: 82px;
+    left: 12px;
+    width: auto;
+    max-height: min(350px, 48vh);
+  }
 }
 
 /* Final sidebar history/trash guard: this must stay at the real end of the file. */
@@ -2517,6 +2623,102 @@ pre {
 .trash-card .item-actions button {
   color: #43a978 !important;
   font-size: 13px !important;
+}
+
+/* Conversation history: quiet, compact rows with a clear reading hierarchy. */
+#historyList {
+  gap: 4px !important;
+}
+
+#historyList .history-card {
+  min-height: 66px !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  transition: background .16s ease, border-color .16s ease;
+}
+
+#historyList .history-card:hover,
+#historyList .history-card:focus-within {
+  border-color: #e1ebe4 !important;
+  background: #fbfdfb !important;
+}
+
+#historyList .history-card.is-active {
+  border-color: #d5e9db !important;
+  background: #edf6f0 !important;
+}
+
+#historyList .history-card::before {
+  top: 11px !important;
+  bottom: 11px !important;
+  width: 2px !important;
+}
+
+#historyList .history-card.is-active::before {
+  opacity: 1;
+}
+
+#historyList .history-open-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 64px !important;
+  gap: 4px !important;
+  padding: 9px 43px 9px 13px !important;
+}
+
+#historyList .history-open-area strong,
+#historyList .history-open-area small {
+  display: block;
+  max-width: 100% !important;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#historyList .history-open-area strong {
+  color: #26382d !important;
+  font-size: 13px !important;
+  font-weight: 650;
+  line-height: 1.4 !important;
+}
+
+#historyList .history-open-area small {
+  color: #87988d !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+#historyList .history-card.is-active .history-open-area strong {
+  color: #246347 !important;
+}
+
+#historyList .history-more {
+  top: 17px !important;
+  right: 8px !important;
+}
+
+#historyList .history-more summary {
+  width: 29px !important;
+  height: 29px !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  opacity: .65;
+}
+
+#historyList .history-card:hover .history-more summary,
+#historyList .history-more[open] summary,
+#historyList .history-more summary:focus-visible {
+  background: #e7f0e9 !important;
+  opacity: 1;
+}
+
+#historyList .muted {
+  padding: 24px 12px;
+  color: #87988d;
+  font-size: 12px;
+  text-align: center;
 }
 
 /* Final sidebar history/trash guard: keep this block at EOF. */
@@ -2997,26 +3199,6 @@ pre {
 .trash-card .item-actions button:hover {
   color: #26865f;
   text-decoration: underline;
-}
-
-/* Final neural-trace spacing guard: keep expanded step gaps aligned with the reference. */
-.message.assistant .cognitive-trace:not(.is-collapsed) {
-  padding-top: 15px;
-  padding-bottom: 20px;
-}
-
-.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps {
-  margin-top: 19px;
-  margin-bottom: 4px;
-}
-
-.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps::before {
-  top: 13px;
-  bottom: 13px;
-}
-
-.message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
-  min-height: 42px;
 }
 
 /* High-fidelity parity layer: closer to the referenced Coupling Life workspace. */
@@ -3669,24 +3851,26 @@ select {
   }
 }
 
-/* Final neural-trace spacing guard. */
+/* Keep template whitespace from stretching the answer's status timeline. */
+.message.assistant .cognitive-trace {
+  white-space: normal;
+}
+
 .message.assistant .cognitive-trace:not(.is-collapsed) {
-  padding-top: 15px !important;
-  padding-bottom: 20px !important;
+  padding: 14px 16px 15px;
 }
 
 .message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps {
-  margin-top: 19px !important;
-  margin-bottom: 4px !important;
+  margin: 13px 0 0 15px;
 }
 
 .message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps::before {
-  top: 13px !important;
-  bottom: 13px !important;
+  top: 12px;
+  bottom: 12px;
 }
 
 .message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
-  min-height: 42px !important;
+  min-height: 38px;
 }
 
 /* Final sidebar history/trash guard: this must stay at the real end of the file. */
