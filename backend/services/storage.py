@@ -129,10 +129,17 @@ class SQLiteAgentStore:
         return [row_to_dict(row) for row in rows]
 
     def active_memories(self, query: str, limit: int = 6) -> list[dict[str, Any]]:
+        query = query.strip()
         with db() as conn:
             rows = conn.execute(
                 "SELECT * FROM memories WHERE status='confirmed' "
                 "AND (content LIKE ? OR ?='') ORDER BY updated_at DESC LIMIT ?",
-                (f"%{query.strip()}%", query.strip(), limit),
+                (f"%{query}%", query, limit),
             ).fetchall()
+            if query and not rows:
+                rows = conn.execute(
+                    "SELECT * FROM memories WHERE status='confirmed' "
+                    "ORDER BY updated_at DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
         return [row_to_dict(row) for row in rows]

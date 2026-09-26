@@ -147,15 +147,15 @@ function applyTracePlan(assistant, plan) {
   setTraceRow(
     assistant,
     "memory",
-    plan.memories > 0 ? "done" : "skipped",
-    plan.memories > 0 ? `已参考 ${plan.memories} 条相关记忆` : "未命中相关记忆",
+    plan.memory_enabled && plan.memories > 0 ? "done" : "skipped",
+    !plan.memory_enabled ? "长期记忆已关闭" : plan.memories > 0 ? `已参考 ${plan.memories} 条相关记忆` : "未命中相关记忆",
     traceMs(assistant, 8),
   );
   setTraceRow(
     assistant,
     "context",
-    plan.history > 1 ? "done" : "skipped",
-    plan.history > 1 ? "已整理最近上下文" : "智能上下文优化已关闭",
+    plan.context_enabled && plan.history > 1 ? "done" : "skipped",
+    !plan.context_enabled ? "智能上下文优化已关闭" : plan.history > 1 ? "已整理最近上下文" : "暂无可整理上下文",
     traceMs(assistant, 12),
   );
   setTraceRow(

@@ -42,7 +42,10 @@ def memories(q: str = "", status: str = "", kind: str = "") -> dict[str, Any]:
             f"SELECT * FROM memories WHERE {' AND '.join(clauses)} ORDER BY updated_at DESC",
             params,
         ).fetchall()
-    return {"memories": [row_to_dict(row) for row in rows]}
+    return {
+        "enabled": get_setting("memory_enabled", "true") == "true",
+        "memories": [row_to_dict(row) for row in rows],
+    }
 
 
 @router.post("/memories")

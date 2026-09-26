@@ -29,6 +29,9 @@ class AgentState(TypedDict, total=False):
     user_message: str
     web_mode: str
     attachments: list[dict[str, Any]]
+    memory_enabled: bool
+    knowledge_enabled: bool
+    context_enabled: bool
     history: list[dict[str, str]]
     memories: list[dict[str, Any]]
     knowledge: list[dict[str, Any]]
@@ -70,16 +73,21 @@ class CouplingAgentRuntime:
         query = state.get("user_message", "").strip()
         conversation_id = state["conversation_id"]
         context_enabled = self.store.setting("context_enabled", "true") == "true"
+        memory_enabled = self.store.setting("memory_enabled", "true") == "true"
+        knowledge_enabled = self.store.setting("knowledge_enabled", "true") == "true"
         history = self.store.recent_context(conversation_id, limit=12 if context_enabled else 6)
         memories: list[dict[str, Any]] = []
         knowledge: list[dict[str, Any]] = []
 
-        if self.store.setting("memory_enabled", "true") == "true":
+        if memory_enabled:
             memories = self.store.active_memories(query, limit=6)
-        if self.store.setting("knowledge_enabled", "true") == "true":
+        if knowledge_enabled:
             knowledge = self.store.search_knowledge(query, limit=5)
 
         return {
+            "memory_enabled": memory_enabled,
+            "knowledge_enabled": knowledge_enabled,
+            "context_enabled": context_enabled,
             "history": history,
             "memories": memories,
             "knowledge": knowledge,

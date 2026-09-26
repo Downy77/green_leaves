@@ -554,7 +554,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .kb-btn-clone {
-  min-height: 36px;
+  min-height: 42px;
   padding: 0 12px;
   color: #d8e6df;
   background: #172228;
@@ -1897,9 +1897,9 @@ pre {
 }
 
 .cognitive-trace {
-  width: min(700px, 100%);
-  margin: 2px 0 34px;
-  padding: 14px 14px 16px;
+  width: min(640px, 100%);
+  margin: 2px 0 24px;
+  padding: 12px 13px 13px;
   border: 1px solid rgba(69,168,121,.42);
   border-left-width: 2px;
   border-radius: 5px;
@@ -1917,10 +1917,10 @@ pre {
 
 .trace-head {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  min-height: 24px;
+  gap: 7px;
+  min-height: 22px;
   color: color-mix(in srgb, var(--ink), var(--accent) 28%);
   font-size: 13px;
 }
@@ -1930,7 +1930,7 @@ pre {
 }
 
 .trace-toggle {
-  padding: 0 0 0 12px;
+  padding: 0 0 0 10px;
   color: var(--muted);
   background: transparent;
   font-size: 13px;
@@ -1941,15 +1941,15 @@ pre {
   position: relative;
   display: grid;
   gap: 0;
-  margin: 14px 0 0 17px;
+  margin: 18px 0 2px 15px;
 }
 
 .trace-steps::before {
   content: "";
   position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 20px;
+  top: 12px;
+  bottom: 12px;
+  left: 18px;
   width: 1px;
   background: rgba(126,146,132,.28);
 }
@@ -1957,9 +1957,9 @@ pre {
 .trace-row {
   position: relative;
   display: grid;
-  grid-template-columns: 42px 100px minmax(120px, 1fr) 44px;
+  grid-template-columns: 38px 92px minmax(120px, 1fr) 48px;
   align-items: center;
-  min-height: 35px;
+  min-height: 36px;
   color: var(--muted);
   font-size: 11px;
 }
@@ -1967,17 +1967,17 @@ pre {
 .trace-node {
   position: relative;
   z-index: 1;
-  width: 12px;
-  height: 12px;
-  margin-left: 14px;
+  width: 11px;
+  height: 11px;
+  margin-left: 13px;
   border: 1px solid rgba(126,146,132,.38);
   border-radius: 50%;
   background: #fff;
 }
 
 .trace-node-main {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   margin-left: 0;
   border-color: rgba(69,168,121,.72);
   background:
@@ -1994,6 +1994,7 @@ pre {
 .trace-state,
 .trace-time {
   color: var(--muted);
+  font-size: 10.5px;
 }
 
 .trace-time {
@@ -2066,7 +2067,7 @@ pre {
 }
 
 .cognitive-trace.is-collapsed {
-  width: min(700px, 100%);
+  width: min(640px, 100%);
   margin: 0 0 12px;
   padding: 0 12px;
   min-height: 42px;
@@ -2188,6 +2189,46 @@ pre {
     overflow-x: auto;
     padding-bottom: 2px;
   }
+}
+
+/* Final neural-trace spacing guard: this must stay at the real end of the file. */
+.message.assistant .cognitive-trace:not(.is-collapsed) {
+  padding-top: 15px !important;
+  padding-bottom: 20px !important;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps {
+  margin-top: 19px !important;
+  margin-bottom: 4px !important;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps::before {
+  top: 13px !important;
+  bottom: 13px !important;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
+  min-height: 42px !important;
+}
+
+/* Final neural-trace spacing guard: keep expanded step gaps aligned with the reference. */
+.message.assistant .cognitive-trace:not(.is-collapsed) {
+  padding-top: 15px;
+  padding-bottom: 20px;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps {
+  margin-top: 19px;
+  margin-bottom: 4px;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps::before {
+  top: 13px;
+  bottom: 13px;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
+  min-height: 42px;
 }
 
 /* High-fidelity parity layer: closer to the referenced Coupling Life workspace. */
@@ -2838,4 +2879,24 @@ select {
     overflow-x: auto;
     padding-bottom: 2px;
   }
+}
+
+/* Final neural-trace spacing guard: this must stay at the real end of the file. */
+.message.assistant .cognitive-trace:not(.is-collapsed) {
+  padding-top: 15px !important;
+  padding-bottom: 20px !important;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps {
+  margin-top: 19px !important;
+  margin-bottom: 4px !important;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-steps::before {
+  top: 13px !important;
+  bottom: 13px !important;
+}
+
+.message.assistant .cognitive-trace:not(.is-collapsed) .trace-row {
+  min-height: 42px !important;
 }
