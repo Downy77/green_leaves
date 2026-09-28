@@ -6,6 +6,7 @@ const state = {
   webMode: localStorage.getItem("clone_web_mode") || "auto",
   model: "",
   models: [],
+  sidebarCollapsed: localStorage.getItem("clone_sidebar_collapsed") === "true",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -639,14 +640,14 @@ async function addKnowledge() {
   const title = $("kbTitle").value.trim();
   const text = $("kbText").value.trim();
   if (!title || !text) return toast("请填写知识标题和内容");
-  await api("/api/knowledge/sources/text", {
+  const result = await api("/api/knowledge/sources/text", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, text }),
   });
   $("kbTitle").value = "";
   $("kbText").value = "";
-  toast("知识已添加");
+  toast(result.index_status === "failed" ? "知识已保存，向量索引失败，仍可关键词检索" : "知识已添加");
   $("kbImportDrawer").classList.remove("open");
   await loadKnowledge();
 }
@@ -655,8 +656,12 @@ async function uploadKnowledgeFiles(files) {
   if (!files || !files.length) return;
   const fd = new FormData();
   [...files].forEach((file) => fd.append("files", file));
-  await fetch("/api/knowledge/sources", { method: "POST", body: fd });
-  toast("资料已导入知识库");
+  const response = await fetch("/api/knowledge/sources", { method: "POST", body: fd });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.detail || "资料导入失败");
+  if (result.errors?.length) toast(`${result.errors[0].file}：${result.errors[0].error}`);
+  else if (result.items?.some((item) => item.index_status === "failed")) toast("资料已保存，向量索引失败，仍可关键词检索");
+  else toast(`已导入 ${result.items?.length || 0} 份资料`);
   await loadKnowledge();
 }
 
@@ -668,10 +673,13 @@ async function openKnowledge(id) {
   $("kbNodeTitle").textContent = note.title || "知识节点";
   $("kbReaderState").textContent = note.status === "ready" ? "已确认知识" : note.status || "知识条目";
   $("kbReaderContent").innerHTML = renderMarkdownLite(note.content || "暂无内容");
-  $("kbReaderSources").textContent = note.source_file ? `原始文件：${note.source_file}` : "手工知识";
+  $("kbReaderSources").innerHTML = note.source_file
+    ? `原始文件 · <a href="/api/knowledge/notes/${encodeURIComponent(note.id)}/download">下载原始文件</a>`
+    : "手工知识";
   $("kbEditTitle").value = note.title || "";
   $("kbEditContent").value = note.content || "";
-  $("kbNodeMeta").textContent = `稳定编号：${note.id}\n来源：${note.source_file || "手工知识"}\n最近更新：${note.updated_at || "—"}`;
+  const indexLabel = { ready: "可语义检索", disabled: "关键词检索", failed: "向量索引失败", pending: "等待建立索引" }[note.index_status] || "关键词检索";
+  $("kbNodeMeta").textContent = `稳定编号：${note.id}\n检索：${indexLabel}\n来源：${note.source_file || "手工知识"}\n最近更新：${note.updated_at || "—"}`;
   $("kbReader").hidden = false;
   $("kbEditor").hidden = true;
   renderKnowledgeRelations(id);
@@ -713,12 +721,12 @@ function renderKnowledgeRelations(id) {
 
 async function saveKnowledgeNote() {
   if (!kbState.selectedId) return;
-  await api(`/api/knowledge/notes/${kbState.selectedId}`, {
+  const result = await api(`/api/knowledge/notes/${kbState.selectedId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title: $("kbEditTitle").value, content: $("kbEditContent").value }),
   });
-  toast("知识已保存，可立即用于检索");
+  toast(result.index_status === "failed" ? "知识已保存，向量索引失败，仍可关键词检索" : "知识已保存，可立即用于检索");
   await loadKnowledge();
   await openKnowledge(kbState.selectedId);
 }
@@ -885,6 +893,42 @@ function applyUi() {
   if ($("motionSetting")) $("motionSetting").checked = reduceMotion;
   document.querySelectorAll("[data-theme-value]").forEach((button) => button.classList.toggle("active", button.dataset.themeValue === theme));
   document.querySelectorAll("[data-width-value]").forEach((button) => button.classList.toggle("active", button.dataset.widthValue === width));
+  applySidebarState();
+}
+
+function isCompactViewport() {
+  return window.matchMedia("(max-width: 920px)").matches;
+}
+
+function applySidebarState() {
+  const shell = document.querySelector(".app-shell");
+  const sidebar = $("sidebar");
+  const toggle = $("toggleSidebar");
+  if (!shell || !sidebar || !toggle) return;
+  const collapsed = state.sidebarCollapsed && !isCompactViewport();
+  shell.classList.toggle("sidebar-collapsed", collapsed);
+  sidebar.classList.toggle("is-collapsed", collapsed);
+  toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  toggle.setAttribute("aria-label", collapsed ? "展开侧边栏" : "收起侧边栏");
+  toggle.title = collapsed ? "展开侧边栏" : "收起侧边栏";
+  if (collapsed) sidebar.classList.remove("open");
+}
+
+function expandSidebar() {
+  if (!state.sidebarCollapsed) return;
+  state.sidebarCollapsed = false;
+  localStorage.setItem("clone_sidebar_collapsed", "false");
+  applySidebarState();
+}
+
+function toggleSidebar() {
+  if (isCompactViewport()) {
+    $("sidebar").classList.toggle("open");
+    return;
+  }
+  state.sidebarCollapsed = !state.sidebarCollapsed;
+  localStorage.setItem("clone_sidebar_collapsed", String(state.sidebarCollapsed));
+  applySidebarState();
 }
 
 function bindEvents() {
@@ -980,6 +1024,7 @@ function bindEvents() {
   $("announcementBtn").onclick = openAnnouncements;
   $("loginHelpTop").onclick = () => openModal(`<h2>联系管理员</h2><p class="muted">本地复刻版默认免登录。正式部署时可以在这里接入管理员二维码、企业微信或登录帮助。</p>`);
   $("settingsTop").onclick = () => {
+    expandSidebar();
     document.querySelector('[data-tab="settings"]').click();
     $("sidebar").classList.add("open");
   };
@@ -992,6 +1037,7 @@ function bindEvents() {
   $("apiKeyBtn").onclick = openApiKey;
   $("profileMenuBtn").onclick = () => {
     $("userMenuPop").classList.remove("open");
+    expandSidebar();
     document.querySelector('[data-tab="settings"]').click();
     $("sidebar").classList.add("open");
   };
@@ -1007,7 +1053,8 @@ function bindEvents() {
       $("sidebar").classList.remove("open");
     }
   });
-  $("toggleSidebar").onclick = () => $("sidebar").classList.toggle("open");
+  $("toggleSidebar").onclick = toggleSidebar;
+  window.addEventListener("resize", applySidebarState);
   $("saveProfile").onclick = async () => {
     await api("/auth/profile", {
       method: "PUT",
@@ -1041,13 +1088,17 @@ function bindEvents() {
   $("memoryManagerQuery").oninput = () => loadMemories();
   $("memoryManagerStatus").onchange = () => loadMemories();
   $("memoryManagerKind").onchange = () => loadMemories();
-  $("addKnowledge").onclick = addKnowledge;
-  $("kbFiles").onchange = (e) => uploadKnowledgeFiles(e.target.files);
+  $("addKnowledge").onclick = () => addKnowledge().catch((error) => toast(error.message));
+  $("kbFiles").onchange = async (e) => {
+    try { await uploadKnowledgeFiles(e.target.files); }
+    catch (error) { toast(error.message); }
+    finally { e.target.value = ""; }
+  };
   $("kbDropzone").onclick = () => $("kbFiles").click();
   $("kbDropzone").addEventListener("dragover", (event) => event.preventDefault());
   $("kbDropzone").addEventListener("drop", (event) => {
     event.preventDefault();
-    uploadKnowledgeFiles(event.dataTransfer.files);
+    uploadKnowledgeFiles(event.dataTransfer.files).catch((error) => toast(error.message));
   });
   $("kbImportOpen").onclick = () => {
     $("kbInspector").classList.remove("open");
@@ -1064,7 +1115,7 @@ function bindEvents() {
     $("kbEditor").hidden = true;
     $("kbReader").hidden = false;
   };
-  $("kbSaveNote").onclick = saveKnowledgeNote;
+  $("kbSaveNote").onclick = () => saveKnowledgeNote().catch((error) => toast(error.message));
   $("kbArchiveNote").onclick = () => archiveKnowledgeNote();
   $("kbRelationTarget").onchange = (event) => {
     const value = event.target.value;

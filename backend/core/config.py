@@ -16,6 +16,7 @@ load_dotenv(BASE_DIR / ".env", override=False)
 # workspace continues to use SQLite. Prefer the scoped variable to avoid
 # accidentally moving unrelated tables when a generic DATABASE_URL is present.
 CHAT_DATABASE_URL = os.getenv("CHAT_DATABASE_URL") or os.getenv("DATABASE_URL") or ""
+KNOWLEDGE_DATABASE_URL = os.getenv("KNOWLEDGE_DATABASE_URL", "").strip()
 
 
 PROVIDERS = {

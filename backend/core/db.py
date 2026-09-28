@@ -76,6 +76,7 @@ def init_db() -> None:
                 content TEXT NOT NULL,
                 kind TEXT NOT NULL DEFAULT 'note',
                 status TEXT NOT NULL DEFAULT 'ready',
+                index_status TEXT NOT NULL DEFAULT 'pending',
                 source_file TEXT DEFAULT '',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
@@ -109,6 +110,11 @@ def init_db() -> None:
         }
         if "deleted_at" not in columns:
             conn.execute("ALTER TABLE conversations ADD COLUMN deleted_at TEXT DEFAULT ''")
+        knowledge_columns = {
+            row["name"] for row in conn.execute("PRAGMA table_info(knowledge)").fetchall()
+        }
+        if "index_status" not in knowledge_columns:
+            conn.execute("ALTER TABLE knowledge ADD COLUMN index_status TEXT NOT NULL DEFAULT 'pending'")
         conn.execute(
             "UPDATE conversations SET deleted_at=updated_at "
             "WHERE deleted=1 AND (deleted_at IS NULL OR deleted_at='')"
@@ -137,4 +143,7 @@ async def lifespan(_: Any):
     from backend.services.chat_store import init_chat_store
 
     init_chat_store()
+    from backend.services.knowledge_vectors import init_index
+
+    init_index()
     yield

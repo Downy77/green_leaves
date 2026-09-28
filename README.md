@@ -122,6 +122,24 @@ CHAT_DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/green_leaves
 
 长期记忆、知识库、系统设置等非对话表暂时仍使用 SQLite，以便分阶段迁移。应用启动时会自动在 PostgreSQL 中创建 `conversations` 和 `messages` 表及索引。
 
+### 耦合知识库与 pgvector
+
+知识节点、关联关系和原始文件仍由 SQLite/上传目录管理；设置 `KNOWLEDGE_DATABASE_URL` 后，知识正文会按约 450 字、70 字重叠切片，用本地中文 embedding 模型生成 512 维向量，并写入 PostgreSQL 的 `knowledge_chunks` 表。应用启动时自动启用 pgvector 扩展并建立 HNSW 索引。问答和手动搜索组合语义相似度与关键词匹配；没有配置 pgvector 或索引暂时失败时仍可使用关键词检索。
+
+```env
+KNOWLEDGE_DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/green_leaves
+```
+
+本地 PostgreSQL 需要安装 pgvector 扩展；Docker Compose 已使用包含该扩展的 PostgreSQL 16 镜像。embedding 在应用本地运行，不使用 DeepSeek 对话 Key；首次建立索引时会下载约 90 MB 的中文模型并缓存到 `data/models`。支持文本/代码、CSV、PDF、DOCX、XLSX 和常见图片（本地 OCR 提取文字）；扫描版 PDF 尚需先 OCR。单文件上限 20 MB，解析正文最多 30 万字符。上传成功后保留原始文件，可在知识节点中下载；编辑正文会重建对应切片，归档会清除向量并从图谱与检索中隐藏。
+
+已有知识可以在设置数据库连接后重建索引：
+
+```powershell
+python -m scripts.reindex_knowledge
+```
+
+原站公开界面可观察到的导入、节点查看/编辑、原始文件保留、关联、归档和回答检索已对应实现；原站内部的私有排序和解析算法无法从公开页面确认。
+
 如果你已经在本地 SQLite 里有旧对话，配置好 `CHAT_DATABASE_URL` 后可以执行一次迁移：
 
 ```powershell
@@ -136,6 +154,7 @@ python scripts/migrate_chat_sqlite_to_pg.py
 
 ```env
 CHAT_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/green_leaves
+KNOWLEDGE_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/green_leaves
 ```
 
 启动：

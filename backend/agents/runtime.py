@@ -86,7 +86,7 @@ class CouplingAgentRuntime:
         if memory_enabled:
             memories = self.store.active_memories(query, limit=6)
         if knowledge_enabled:
-            knowledge = self.store.search_knowledge(query, limit=5)
+            knowledge = await asyncio.to_thread(self.store.search_knowledge, query, 5)
 
         return {
             "memory_enabled": memory_enabled,
@@ -164,7 +164,8 @@ class CouplingAgentRuntime:
             blocks.append(
                 "知识库检索:\n"
                 + "\n".join(
-                    f"- {item.get('title', '未命名')}: {item.get('content', '')[:700]}"
+                    f"- {item.get('title', '未命名')} [知识编号 {item.get('id', '')}]: "
+                    f"{(item.get('match_excerpt') or item.get('content') or '')[:700]}"
                     for item in knowledge
                 )
             )
@@ -269,6 +270,7 @@ class CouplingAgentRuntime:
             "你是耦合生命工作台中的中文 AI 助手。"
             "回答要清晰、务实、可执行；如果使用了知识库、记忆或联网结果，"
             "请优先基于这些上下文，并明确区分已知事实与推断。"
+            "引用知识库内容时注明知识标题；没有命中时不要编造知识来源。"
             f"\n\n当前任务路由：{state.get('route', 'knowledge_assistant')}"
             f"\n\n上下文：\n{state.get('context_text', '没有额外上下文。')}"
         )

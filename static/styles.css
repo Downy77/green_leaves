@@ -2721,6 +2721,12 @@ pre {
   text-align: center;
 }
 
+#kbReaderSources a {
+  color: var(--accent);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
 /* Final sidebar history/trash guard: keep this block at EOF. */
 #panel-history,
 #panel-trash {
@@ -3706,6 +3712,85 @@ select {
     float: none;
     display: block;
     margin: 0 auto 8px;
+  }
+}
+
+@media (min-width: 921px) {
+  .app-shell {
+    transition: grid-template-columns .24s ease;
+  }
+
+  .app-shell.sidebar-collapsed {
+    grid-template-columns: 74px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    transition: background-color .24s ease, border-color .24s ease;
+  }
+
+  .sidebar.is-collapsed {
+    align-items: center;
+    background: rgba(244, 247, 243, .78);
+  }
+
+  .sidebar.is-collapsed .brand {
+    width: 100%;
+    justify-content: center;
+    padding: 18px 0;
+  }
+
+  .sidebar.is-collapsed .brand > div:not(.orb),
+  .sidebar.is-collapsed .primary-action,
+  .sidebar.is-collapsed .search,
+  .sidebar.is-collapsed .tabs,
+  .sidebar.is-collapsed .side-panel {
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .sidebar.is-collapsed .primary-action,
+  .sidebar.is-collapsed .search,
+  .sidebar.is-collapsed .tabs,
+  .sidebar.is-collapsed .side-panel {
+    display: none;
+  }
+
+  .sidebar.is-collapsed .orb {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar.is-collapsed .orb span {
+    width: 14px;
+    height: 14px;
+  }
+
+  #toggleSidebar {
+    transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+  }
+
+  .app-shell.sidebar-collapsed #toggleSidebar {
+    border-color: color-mix(in srgb, var(--accent), var(--line) 60%);
+    background: color-mix(in srgb, var(--accent), white 88%);
+    color: color-mix(in srgb, var(--accent), #1f2a23 28%);
+  }
+}
+
+@media (max-width: 920px) {
+  .app-shell.sidebar-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar.is-collapsed .brand > div:not(.orb),
+  .sidebar.is-collapsed .primary-action,
+  .sidebar.is-collapsed .search,
+  .sidebar.is-collapsed .tabs,
+  .sidebar.is-collapsed .side-panel {
+    display: initial;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 

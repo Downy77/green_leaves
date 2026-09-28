@@ -9,19 +9,17 @@ from typing import Any
 from fastapi import UploadFile
 
 from backend.core.config import UPLOAD_DIR
-from backend.core.db import db, now_iso, row_to_dict
+from backend.repositories import memory_repository, settings_repository
 from backend.services.chat_store import add_message, ensure_conversation, recent_context
+from backend.services.knowledge_search import search_knowledge
 
 
 def get_setting(key: str, default: str = "") -> str:
-    with db() as conn:
-        row = conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
-        return row["value"] if row else default
+    return settings_repository.get_setting(key, default)
 
 
 def set_setting(key: str, value: str) -> None:
-    with db() as conn:
-        conn.execute("INSERT OR REPLACE INTO settings(key,value) VALUES (?,?)", (key, value))
+    settings_repository.set_setting(key, value)
 
 
 def save_upload(file: UploadFile) -> dict[str, Any]:
@@ -53,35 +51,7 @@ class SQLiteAgentStore:
         return recent_context(conversation_id, limit)
 
     def search_knowledge(self, query: str, limit: int = 5) -> list[dict[str, Any]]:
-        query = query.strip()
-        with db() as conn:
-            if not query:
-                rows = conn.execute(
-                    "SELECT * FROM knowledge WHERE status!='archived' "
-                    "ORDER BY updated_at DESC LIMIT ?",
-                    (limit,),
-                ).fetchall()
-            else:
-                rows = conn.execute(
-                    "SELECT * FROM knowledge WHERE status!='archived' "
-                    "AND (title LIKE ? OR content LIKE ?) "
-                    "ORDER BY updated_at DESC LIMIT ?",
-                    (f"%{query}%", f"%{query}%", limit),
-                ).fetchall()
-        return [row_to_dict(row) for row in rows]
+        return search_knowledge(query, limit)
 
     def active_memories(self, query: str, limit: int = 6) -> list[dict[str, Any]]:
-        query = query.strip()
-        with db() as conn:
-            rows = conn.execute(
-                "SELECT * FROM memories WHERE status='confirmed' "
-                "AND (content LIKE ? OR ?='') ORDER BY updated_at DESC LIMIT ?",
-                (f"%{query}%", query, limit),
-            ).fetchall()
-            if query and not rows:
-                rows = conn.execute(
-                    "SELECT * FROM memories WHERE status='confirmed' "
-                    "ORDER BY updated_at DESC LIMIT ?",
-                    (limit,),
-                ).fetchall()
-        return [row_to_dict(row) for row in rows]
+        return memory_repository.list_active_memories(query, limit)

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>绿叶脉络</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20260926-history-polish">
+  <link rel="stylesheet" href="/static/styles.css?v=20260926-sidebar-collapse">
 </head>
 <body>
   <div class="app-shell">
@@ -63,7 +63,7 @@
               <div><h3>导入知识</h3><p>原始文件会保留，解析成功后知识立即可用。</p></div>
               <button type="button" class="kb-close-clone" id="kbImportClose">×</button>
             </div>
-            <label class="kb-dropzone-clone" id="kbDropzone"><strong>拖入文件，或点击选择</strong><span>支持文本、代码、表格、Office、PDF 和图片</span><input id="kbFiles" type="file" multiple hidden></label>
+            <label class="kb-dropzone-clone" id="kbDropzone"><strong>拖入文件，或点击选择</strong><span>支持文本、代码、CSV、PDF、DOCX、XLSX 和图片</span><input id="kbFiles" type="file" multiple hidden></label>
             <div class="kb-paste-clone">
               <label for="kbTitle">知识标题</label>
               <input id="kbTitle" type="text" maxlength="100" placeholder="例如：客户跟进规则">
@@ -183,7 +183,7 @@
 
     <main class="workspace">
       <header class="topbar">
-        <button class="icon-btn" id="toggleSidebar">☰</button>
+        <button class="icon-btn" id="toggleSidebar" type="button" aria-label="收起侧边栏" aria-controls="sidebar" aria-expanded="true">☰</button>
         <div class="conversation-heading">
           <span class="status-dot"></span>
           <div>
@@ -328,6 +328,6 @@
   </div>
 
   <div class="toast-stack" id="toasts"></div>
-  <script src="/static/app.js?v=20260926-history-polish"></script>
+  <script src="/static/app.js?v=20260926-sidebar-collapse"></script>
 </body>
 </html>
